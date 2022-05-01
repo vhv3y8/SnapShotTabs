@@ -41,6 +41,7 @@ body {
     border-radius: 0.5rem;
     margin-bottom: 0.75rem;
     font-family: 'NanumSquareRoundBold';
+    user-select: none;
 }
 .item:hover {
     background-color: #d9d9d9;

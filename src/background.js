@@ -1,6 +1,18 @@
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.set({data: JSON.stringify([])}, function() {
-    console.log("onStartup Event. data is [].");
+  chrome.storage.sync.set({
+    data:
+      [
+        {
+          time: new Date('December 17, 1995 03:24:00').toISOString().replace("T", " ").slice(0, -5),
+          urls: ["https://developer.chrome.com/docs/extensions/reference/storage/", "https://developer.chrome.com/docs/extensions/mv3/service_workers/"]
+        },
+        {
+          time: new Date().toISOString().replace("T", " ").slice(0, -5),
+          urls: ["https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/slice", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date"]
+        }
+      ]
+  }, function () {
+    console.log("onInstalled event - data is set.");
   });
 });
 
@@ -12,3 +24,5 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
     );
   }
 });
+
+var hihi = "asdfadf";
