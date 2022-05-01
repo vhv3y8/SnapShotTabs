@@ -1,0 +1,19 @@
+{
+  "name": "SnapShotTabs",
+  "version": "0.0.0",
+  "manifest_version": 3,
+  "description": "탭들을 저장하고 꺼내쓰게 해주는 확장 프로그램입니다.",
+
+  "icons": {
+    "128": "assets/icon128.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html"
+  },
+  "background": {
+    "service_worker": "src/background.js"
+  }
+}

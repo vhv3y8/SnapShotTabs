@@ -1,0 +1,86 @@
+html, body {
+  margin: 0;
+}
+body {
+    width: 350px;
+    height: 500px;
+    background-color: #d9d9d9;
+    padding: 1rem;
+}
+
+#list {
+    width: calc(100% - 1.2rem);
+    height: calc(400px - 1.2rem);
+    background-color: white;
+    padding: 0.6rem;
+    
+    overflow-y: scroll;
+}
+#list::-webkit-scrollbar {
+    width: 0.5rem;
+    height: 100%;
+}
+#list::-webkit-scrollbar-thumb {
+    background-color: #999999;
+    border-radius: 0.25rem;
+}
+#list::-webkit-scrollbar-thumb:hover {
+    background-color: #b3b3b3;
+}
+#list::-webkit-scrollbar-thumb:active {
+    background-color: #8c8c8c;
+}
+#list::-webkit-scrollbar-track {
+    background-color: #f2f2f2;
+}
+.item {
+    width: calc(100% - 2rem);
+    height: calc(80px - 2rem);
+    padding: 1rem;
+    background-color: #e6e6e6;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-family: 'NanumSquareRoundBold';
+}
+.item:hover {
+    background-color: #d9d9d9;
+}
+.item:active {
+    background-color: #cccccc;
+}
+
+.item p {
+    margin: 0;
+}
+.item .itemName {
+    font-size: 17px;
+    margin-bottom: 0.5rem;
+}
+.item .itemTime {
+    font-size: 12px;
+}
+
+.selected {
+    background-color: #ff8566 !important;
+}
+
+/* */
+
+#buttons {
+    display: block;
+    width: 100%;
+    height: calc(100px - 1rem);
+    margin-top: 1rem;
+    background-color: #009900;
+    border-radius: 0.5rem;
+    text-align: center;
+    color: white;
+    border: none;
+    font-family: 'NanumBarunGothicYetHangul';
+}
+#buttons:hover {
+    background-color: #00b300;
+}
+#buttons:active {
+    background-color: #008000;
+}
