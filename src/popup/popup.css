@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
 html, body {
   margin: 0;
 }
@@ -9,16 +11,24 @@ body {
 }
 
 #list {
-    width: calc(100% - 1.2rem);
+    width: calc(100% - 0.7rem);
     height: calc(400px - 1.2rem);
     background-color: white;
     padding: 0.6rem;
+    padding-right: 0.15rem;
     
-    overflow-y: scroll;
+    /* https://stackoverflow.com/a/8631811/13692546 */
+    overflow-y: hidden;
+    scrollbar-gutter: stable;
+}
+#list:hover {
+    overflow-y: auto;
 }
 #list::-webkit-scrollbar {
-    width: 0.5rem;
+    width: 0.45rem;
     height: 100%;
+    margin: 0;
+    padding: 0;
 }
 #list::-webkit-scrollbar-thumb {
     background-color: #999999;
@@ -30,9 +40,7 @@ body {
 #list::-webkit-scrollbar-thumb:active {
     background-color: #8c8c8c;
 }
-#list::-webkit-scrollbar-track {
-    background-color: #f2f2f2;
-}
+
 .item {
     width: calc(100% - 2rem);
     height: calc(80px - 2rem);
@@ -40,7 +48,8 @@ body {
     background-color: #e6e6e6;
     border-radius: 0.5rem;
     margin-bottom: 0.75rem;
-    font-family: 'NanumSquareRoundBold';
+    /* font-family: 'NanumSquareRoundBold'; */
+    font-family: 'Open Sans', sans-serif;
     user-select: none;
 }
 .item:hover {
