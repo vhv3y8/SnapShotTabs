@@ -18,13 +18,13 @@ window.addEventListener("load", async (e) => {
       });
 
       Object.keys(res.data).forEach((idx) => {
-        let korTime = Date.parse(data[idx].lastOpen);
+        let korTime = new Date(data[idx].lastOpen);
         console.log({
           korTime,
           type: typeof korTime
         })
         korTime.setHours(korTime.getHours() + 9);
-        document.getElementById("list").appendChild(createItemElement(createTitle(data[idx].tags[0]), korTime, idx));
+        document.getElementById("list").appendChild(createItemElement(createTitle(data[idx].tags[0], data[idx].tags.length), parseDate(korTime), idx));
       })
     });
 });
@@ -52,8 +52,10 @@ document.getElementById("buttons").addEventListener("click", async (e) => {
   let curWin = await chrome.windows.getCurrent();
   let newData = await generateData();
   console.log(newData);
-  newData.lastOpen.setHours(newData.lastOpen.getHours() + 9);
-  newData.lastUpdate.setHours(newData.lastUpdate.getHours() + 9);
+  let lastOpen = new Date(newData.lastOpen);
+  let lastUpdate = new Date(newData.lastUpdate);
+  lastOpen.setHours(lastOpen.getHours() + 9);
+  lastUpdate.setHours(lastUpdate.getHours() + 9);
   console.log(newData);
 
   if (!Object.keys(temp).includes(curWin.id)) { // new save.
@@ -62,7 +64,7 @@ document.getElementById("buttons").addEventListener("click", async (e) => {
       lastIdx,
       data
     });
-    document.getElementById("list").appendChild(createItemElement(createTitle(newData.tags[0]), parseDate(newData.lastUpdate), lastIdx));
+    document.getElementById("list").appendChild(createItemElement(createTitle(newData.tags[0], newData.urls.length), parseDate(lastUpdate), lastIdx));
   }
   // else { // 팝업에서 클릭해서 열었음, update
 
@@ -107,7 +109,7 @@ function updateItem(idx) {
 async function generateData(tabs) {
   let curTabs = await chrome.tabs.query({ currentWindow: true });
   // time.setHours(time.getHours() + 9);
-  return { tags: [curTabs[0].title], path: [], lastOpen: new Date(), lastUpdate: new Date(), urls: curTabs.map(tab => tab.url) };
+  return { tags: [curTabs[0].title], path: [], lastOpen: new Date().toISOString(), lastUpdate: new Date().toISOString(), urls: curTabs.map(tab => tab.url) };
 }
 
 function createItemElement(nameString, timeString, idx = -1) {

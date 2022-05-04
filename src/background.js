@@ -59,6 +59,10 @@ export function parseDate(date) {
 }
 
 export function createTitle(title, arrLength) {
+  console.log({
+    title,
+    arrLength
+  })
   if (arrLength == 1) {
     return `${title.slice(0, 35)}`;
   } else {
