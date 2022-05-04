@@ -1,48 +1,117 @@
 import { parseDate, createTitle } from "../background.js";
 
-window.addEventListener("load", (e) => {
-  chrome.storage.sync.get(["data"], function (result) {
-    console.log(result.data);
-    for (let idx = 0; idx < result.data.length; idx++) {
-      document.getElementById("list").appendChild(createItemElement(result.data[idx].title, result.data[idx].time, idx));
-    }
+let data;
+let lastIdx;
+let temp;
+
+window.addEventListener("load", async (e) => {
+  chrome.storage.sync.get()
+    .then((res) => {
+      data = res.data;
+      lastIdx = res.lastIdx;
+      temp = res.temp;
+      console.log("fetched all data from storage.");
+      console.log({
+        data,
+        lastIdx,
+        temp
+      });
+
+      Object.keys(res.data).forEach((idx) => {
+        let korTime = Date.parse(data[idx].lastOpen);
+        console.log({
+          korTime,
+          type: typeof korTime
+        })
+        korTime.setHours(korTime.getHours() + 9);
+        document.getElementById("list").appendChild(createItemElement(createTitle(data[idx].tags[0]), korTime, idx));
+      })
+    });
+});
+
+// https://stackoverflow.com/a/60361626/13692546
+// window.addEventListener("beforeunload", async (e) => {
+//   e.preventDefault();
+
+//   await chrome.stroage.sync.set({
+//     data: data,
+//     lastIdx: lastIdx,
+//     temp: temp
+//   })
+//     .then(() => {
+//       chrome.runtime.sendMessage({
+//         data: data,
+//         lastIdx: lastIdx,
+//         temp: temp
+//       });
+//     });
+// });
+
+// save item
+document.getElementById("buttons").addEventListener("click", async (e) => {
+  let curWin = await chrome.windows.getCurrent();
+  let newData = await generateData();
+  console.log(newData);
+  newData.lastOpen.setHours(newData.lastOpen.getHours() + 9);
+  newData.lastUpdate.setHours(newData.lastUpdate.getHours() + 9);
+  console.log(newData);
+
+  if (!Object.keys(temp).includes(curWin.id)) { // new save.
+    data[++lastIdx] = newData;
+    console.log({
+      lastIdx,
+      data
+    });
+    document.getElementById("list").appendChild(createItemElement(createTitle(newData.tags[0]), parseDate(newData.lastUpdate), lastIdx));
+  }
+  // else { // 팝업에서 클릭해서 열었음, update
+
+  // }
+  temp[curWin.id.toString()] = lastIdx;
+  // alternative for ignorant about beforeunload
+  chrome.storage.sync.set({
+    data: data,
+    lastIdx: lastIdx,
+  }).then(() => {
+    console.log("data, lastIdx, temp is saved.");
+  });
+  chrome.storage.sync.set({ temp: temp }).then(() => {
+    console.log("temp is saved.");
+    console.log(temp);
+  });
+
+
+  //   .then(() => {
+  //     console.log("storage 'temp' is now set to :");
+  //     console.log({ temp: temp });
+  //   });
+  // chrome.storage.sync.set({ data: data })
+  //   .then(() => {
+  //     console.log("storage 'data' is now set to :");
+  //     console.log({ data: data });
+  //   });
+
+  chrome.runtime.sendMessage({ hey: "hihi" }).then(() => {
+    console.log("sended!!")
   });
 });
 
-document.getElementById("buttons").addEventListener("click", async (e) => {
-  let winData = await chrome.storage.sync.get(["window"]);
-  winData = winData.window;
-  let storageData = await chrome.storage.sync.get(["data"]);
-  storageData = storageData.data;
-  let curWin = await chrome.windows.getCurrent();
-  let tabs = await chrome.tabs.query({ currentWindow: true });
-  console.log(winData);
-  console.log(curWin);
-  console.log(tabs);
-  let time = new Date();
-  time.setHours(time.getHours() + 9);
-  let newData = { title: createTitle(tabs[0].title, tabs.length), time: parseDate(time), urls: tabs.map(tab => tab.url) };
+// update item
+function updateItem(idx) {
+  // set db
+  data[idx] = generateData();
+  // change ui
+  let elem = document.querySelector(`[data-idx='${idx}']`);
+}
 
-  if (!Object.keys(winData).includes(curWin.id)) {
-    storageData.push(newData);
-    document.getElementById("list").appendChild(createItemElement(createTitle(tabs[0].title, tabs.length), newData.time, storageData.length));
-  } else {
-
-  }
-  winData[curWin.id.toString()] = newData.urls;
-  chrome.storage.sync.set({ window: winData })
-    .then(() => {
-      console.log("storage 'window' is now set to :");
-      console.log({ window: winData });
-    });
-  chrome.storage.sync.set({ data: storageData })
-    .then(() => {
-      console.log("storage 'data' is now set to :");
-      console.log({ data: storageData });
-    });
-});
+async function generateData(tabs) {
+  let curTabs = await chrome.tabs.query({ currentWindow: true });
+  // time.setHours(time.getHours() + 9);
+  return { tags: [curTabs[0].title], path: [], lastOpen: new Date(), lastUpdate: new Date(), urls: curTabs.map(tab => tab.url) };
+}
 
 function createItemElement(nameString, timeString, idx = -1) {
+  console.log(`createItemElement : idx is ${idx}`);
   let elem = document.createElement("div");
   elem.classList.add("item");
   elem.dataset.idx = idx;
@@ -55,8 +124,66 @@ function createItemElement(nameString, timeString, idx = -1) {
   elem.appendChild(nameTag);
   elem.appendChild(timeTag);
   elem.addEventListener("click", (e) => {
-
+    openWindow(idx);
   });
   return elem;
 }
 
+async function openWindow(idx) {
+  let currWin = await chrome.windows.getCurrent({ populate: true });
+  let tabs = currWin.tabs;
+  chrome.runtime.sendMessage({
+    currWin,
+    tabs,
+    idx,
+    idxType: typeof idx
+  });
+  // console.log(currWin);
+
+  let currData = data[idx];
+  if (currData !== undefined) {
+    chrome.runtime.sendMessage({
+      currData,
+      urls: currData.urls
+    });
+
+    if (tabs.length <= currData.urls.length) {
+      for (let i = 0; i < tabs.length; i++) {
+        chrome.tabs.update(tabs[i].id, { url: currData.urls[i] });
+      }
+      for (let i = tabs.length; i < currData.urls.length; i++) {
+        chrome.tabs.create({ url: currData.urls[i], windowId: currWin.id });
+      }
+    } else {
+      for (let i = 0; i < currData.urls.length; i++) {
+        chrome.tabs.update(tabs[i].id, { url: currData.urls[i] });
+      }
+      for (let i = currData.urls.length; i < tabs.length; i++) {
+        chrome.tabs.remove(tabs[i].id);
+      }
+    }
+  }
+
+}
+
+// function getData(idx) {
+//   let currData;
+//   for (let i = 0; i < data.length; i++) {
+//     if (data[i].idx === idx) {
+//       currData = data[i];
+//       break;
+//     }
+//   }
+//   return currData;
+// }
+
+// function setData(obj) {
+//   let id = obj.id;
+//   let currData;
+//   for (let i = 0; i < data.length; i++) {
+//     if (data[i].idx === idx) {
+
+//       break;
+//     }
+//   }
+// }
