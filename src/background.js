@@ -13,6 +13,7 @@
 
 
 chrome.runtime.onInstalled.addListener(() => {
+  console.log("onInstalled.");
   chrome.storage.sync.get()
     .then((res) => {
       if (Object.keys(res).length === 0) {
@@ -49,9 +50,23 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
   for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
     console.log(
       `Storage key "${key}" in namespace "${namespace}" changed.`,
-      `Old value was "${oldValue}", new value is "${newValue}".`
+      `Old value was "${JSON.stringify(oldValue)}", new value is "${JSON.stringify(newValue)}".`
     );
   }
+});
+
+chrome.windows.onRemoved.addListener((winId) => {
+  chrome.storage.sync.get(["temp"], (res) => {
+    let temp = res.temp;
+    if (Object.keys(temp).includes(winId + "")) {
+      delete temp[winId];
+      console.log(`closed ${winId} window and deleted from temp.`);
+      console.log(temp);
+    } else {
+      console.log(`closed window ${winId} was not in temp.`);
+    }
+    chrome.storage.sync.set({ temp });
+  })
 });
 
 export function parseDate(date) {
@@ -59,10 +74,10 @@ export function parseDate(date) {
 }
 
 export function createTitle(title, arrLength) {
-  console.log({
-    title,
-    arrLength
-  })
+  // console.log({
+  //   title,
+  //   arrLength
+  // })
   if (arrLength == 1) {
     return `${title.slice(0, 35)}`;
   } else {
@@ -72,5 +87,9 @@ export function createTitle(title, arrLength) {
 
 chrome.runtime.onMessage.addListener((req, sender, sendRes) => {
   console.log("message!");
-  console.log(req);
+  if (Object.keys(req).includes("tempChanged")) {
+    console.log(req.tempChanged);
+  } else {
+    console.log(req);
+  }
 });

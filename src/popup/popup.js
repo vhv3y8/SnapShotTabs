@@ -5,6 +5,7 @@ let lastIdx;
 let temp;
 
 window.addEventListener("load", async (e) => {
+  let curWin = await chrome.windows.getCurrent();
   chrome.storage.sync.get()
     .then((res) => {
       data = res.data;
@@ -14,17 +15,18 @@ window.addEventListener("load", async (e) => {
       console.log({
         data,
         lastIdx,
-        temp
+        temp,
+        curWin
       });
 
       Object.keys(res.data).forEach((idx) => {
         let korTime = new Date(data[idx].lastOpen);
-        console.log({
-          korTime,
-          type: typeof korTime
-        })
+        // console.log({
+        //   korTime,
+        //   type: typeof korTime
+        // })
         korTime.setHours(korTime.getHours() + 9);
-        document.getElementById("list").appendChild(createItemElement(createTitle(data[idx].tags[0], data[idx].tags.length), parseDate(korTime), idx));
+        document.getElementById("list").appendChild(createItemElement(createTitle(data[idx].tags[0], data[idx].urls.length), parseDate(korTime), idx));
       })
     });
 });
@@ -51,25 +53,63 @@ window.addEventListener("load", async (e) => {
 document.getElementById("buttons").addEventListener("click", async (e) => {
   let curWin = await chrome.windows.getCurrent();
   let newData = await generateData();
-  console.log(newData);
+  let tabs = await chrome.tabs.query({ currentWindow: true });
+  // console.log(newData);
   let lastOpen = new Date(newData.lastOpen);
   let lastUpdate = new Date(newData.lastUpdate);
   lastOpen.setHours(lastOpen.getHours() + 9);
   lastUpdate.setHours(lastUpdate.getHours() + 9);
-  console.log(newData);
+  // console.log(newData);
+  console.log("fetched: Object.keys(temp), curWin.id");
+  console.log({
+    objectKeysTemp: Object.keys(temp),
+    id: curWin.id
+  })
 
-  if (!Object.keys(temp).includes(curWin.id)) { // new save.
-    data[++lastIdx] = newData;
+  if (Object.keys(temp).includes(curWin.id.toString())) {
+    // update element
+    chrome.runtime.sendMessage({ where: "click save button: check if temp includes curWin.id", does: Object.keys(temp).includes(curWin.id.toString()) })
+    let currIdx = temp[curWin.id];
+    let curr = data[currIdx];
+    console.log("temp includes curWin.id: temp[curWin.id].toString(), TABS");
+    console.log({
+      temp,
+      currIdx,
+      curWinId: curWin.id.toString(),
+      curr,
+      tabs
+    });
+    console.log({
+      data,
+      lastIdx,
+      temp,
+      curWin
+    });
+    curr.lastUpdate = new Date(newData.lastUpdate);
+    curr.lastUpdate.setHours(curr.lastUpdate.getHours() + 9);
+    curr.urls = newData.urls;
+    console.log({
+      what: "updating object",
+      curr
+    });
+    document.querySelector(`[data-idx='${currIdx}']`).replaceWith(createItemElement(createTitle(tabs[0].title, curr.urls.length), parseDate(curr.lastUpdate), currIdx));
+    // temp[curWin.id.toString()] = currIdx;
+  } else {
+    // add data and new element
+    // chrome.runtime.sendMessage({ does: Object.keys(temp).includes(curWin.id.toString()), temp, id: curWin.id });
+    // data[++lastIdx] = newData;
+    console.log("adding new element: current lastIdx, data");
     console.log({
       lastIdx,
       data
     });
     document.getElementById("list").appendChild(createItemElement(createTitle(newData.tags[0], newData.urls.length), parseDate(lastUpdate), lastIdx));
+    // add or update current window to temp
+    temp[curWin.id.toString()] = lastIdx;
   }
-  // else { // 팝업에서 클릭해서 열었음, update
 
-  // }
-  temp[curWin.id.toString()] = lastIdx;
+
+  // save datas
   // alternative for ignorant about beforeunload
   chrome.storage.sync.set({
     data: data,
@@ -92,10 +132,6 @@ document.getElementById("buttons").addEventListener("click", async (e) => {
   //     console.log("storage 'data' is now set to :");
   //     console.log({ data: data });
   //   });
-
-  chrome.runtime.sendMessage({ hey: "hihi" }).then(() => {
-    console.log("sended!!")
-  });
 });
 
 // update item
@@ -113,7 +149,7 @@ async function generateData(tabs) {
 }
 
 function createItemElement(nameString, timeString, idx = -1) {
-  console.log(`createItemElement : idx is ${idx}`);
+  // console.log(`createItemElement : idx is ${idx}`);
   let elem = document.createElement("div");
   elem.classList.add("item");
   elem.dataset.idx = idx;
@@ -135,6 +171,7 @@ async function openWindow(idx) {
   let currWin = await chrome.windows.getCurrent({ populate: true });
   let tabs = currWin.tabs;
   chrome.runtime.sendMessage({
+    where: "popup.js openWindow",
     currWin,
     tabs,
     idx,
@@ -148,6 +185,13 @@ async function openWindow(idx) {
       currData,
       urls: currData.urls
     });
+    temp[currWin.id.toString()] = parseInt(idx);
+    chrome.storage.sync.set({ temp: temp })
+      .then(() => {
+        chrome.runtime.sendMessage({
+          tempChanged: temp
+        });
+      });
 
     if (tabs.length <= currData.urls.length) {
       for (let i = 0; i < tabs.length; i++) {

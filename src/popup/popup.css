@@ -1,29 +1,107 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
 
+/* for test */
+html {
+  background-color: #d9d9d9;
+}
+
 html, body {
   margin: 0;
 }
 body {
     width: 350px;
     height: 500px;
-    background-color: #d9d9d9;
-    padding: 1rem;
+    background-color: white;
+    /* background-color: #ffcccc; */
+    /* background-color: #ccccff; */
+    padding: .75rem;
+}
+nav {
+    /* background-color: #999999; */
+    width: 100%;
+    height: 2.5rem;
+}
+hr {
+    border: 0;
+    height: 1.25px;
+    background-color: #e6e6e6;
+    margin: 8px 0;
+}
+.removing {
+    /* background-color: #ffebeb; */
+    background-color: #ffe6e6;
+}
+.navItem {
+    display: inline-block;
+    /* display: flex; */
+    /* flex-direction: row; */
+    justify-content: center;
+    align-items: center;
+    font-size: 0.9rem;
+    width: 90px;
+    height: 100%;
+    /* margin-bottom: .75rem; */
+    border-radius: 1px;
+    user-select: none;
+    font-family: 'Open Sans', sans-serif;
+    color: black;
+}
+.navItem:hover {
+    /* background-color: rgba(242, 242, 242, 0.2); */
+    background-color: #f2f2f2;
+}
+.removing .navItem:hover {
+    background-color: rgba(242, 242, 242, 0.2);
+}
+.navItem:active {
+    background-color: #e6e6e6;
+}
+.removing .navItem:active {
+    background-color: rgba(230, 230, 230, 0.2);
+}
+.navItem span {
+
+}
+#testGray {
+    color: #999999;
+}
+
+.expandTabs {
+    width: 100%;
+    height: 30px;
+    border-radius: 4px;
+}
+.expandTabs:hover {
+    background-color: rgba(230, 230, 230, 0.5);
+}
+.expandTabs p {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 12px;
+    margin-top: calc((100% - 12px) / 2);
+}
+.expandTabs img {
+    margin-top: 5px;
+}
+#asdf {
+    font-size: 1rem;
 }
 
 #list {
-    width: calc(100% - 0.7rem);
+    width: 100%;
     height: calc(400px - 1.2rem);
-    background-color: white;
-    padding: 0.6rem;
+    /* background-color: white; */
+    /* padding: 0.6rem; */
     padding-right: 0.15rem;
+    /* background-color: #f2f2f2; */
     
     /* https://stackoverflow.com/a/8631811/13692546 */
-    overflow-y: hidden;
+    /* overflow-y: hidden; */
+    overflow-y: scroll;
     scrollbar-gutter: stable;
 }
-#list:hover {
+/* #list:hover {
     overflow-y: auto;
-}
+} */
 #list::-webkit-scrollbar {
     width: 0.45rem;
     height: 100%;
@@ -40,34 +118,55 @@ body {
 #list::-webkit-scrollbar-thumb:active {
     background-color: #8c8c8c;
 }
+#list::-webkit-scrollbar-track{
+    background-color: black;
+    opacity: 0.8;
+}
 
 .item {
-    width: calc(100% - 2rem);
-    height: calc(80px - 2rem);
-    padding: 1rem;
-    background-color: #e6e6e6;
-    border-radius: 0.5rem;
+    width: calc(100% - 1.6rem);
+    height: calc(120px - 1.5rem);
+    padding: .75rem;
+    padding-left: .85rem;
+    background-color: #f9f9f9;
+    border-radius: 3px;
     margin-bottom: 0.75rem;
     /* font-family: 'NanumSquareRoundBold'; */
     font-family: 'Open Sans', sans-serif;
     user-select: none;
 }
+.removing .item, .removing .item:hover {
+    background-color: #ffb3b3;
+}
+.removing .item:hover {
+    background-color: #ffb3b3;
+}
+.removing .item:active {
+    background-color: #ff8080;
+}
 .item:hover {
-    background-color: #d9d9d9;
+    background-color: #f2f2f2;
 }
 .item:active {
-    background-color: #cccccc;
+    background-color: #e6e6e6;
+}
+.removing .item.selected {
+    background-color: #ff4d4d !important;
 }
 
 .item p {
     margin: 0;
 }
 .item .itemName {
-    font-size: 17px;
+    font-size: 15.5px;
     margin-bottom: 0.5rem;
 }
-.item .itemTime {
+.item .itemName span {
     font-size: 12px;
+    color: #666666;
+}
+.item .itemTime {
+    font-size: 10px;
 }
 
 .selected {
