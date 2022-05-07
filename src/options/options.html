@@ -17,17 +17,29 @@
     </div>
 
     <div class="inner">
-      <h3>Download</h3>
-      <div id="downloadIcon">
-        <img src="../../assets/icons/iconmonstr-download-2.svg" alt="">
-        <span>Download JSON Data file</span>
+      <div id="downloadDiv">
+        <h3>Download</h3>
+        <a id="downloadIcon">
+          <img src="../../assets/icons/iconmonstr-download-2.svg" alt="">
+          <span>Download JSON Data file</span>
+        </a>
       </div>
-      <h3>Upload</h3>
-      <div class="upload">
-        <input type="file" name="" id="">
+      <div id="uploadDiv">
+        <h3>Upload</h3>
+        <p>uploaded data will be added at the end of current one.</p>
+        <div class="upload">
+          <input type="file" name="" id="uploadFile">
+        </div>
+        <div id="submit">
+          <span>
+            Submit
+          </span>
+        </div>
       </div>
     </div>
   </div>
+
+  <script src="options.js"></script>
 </body>
 
 </html>

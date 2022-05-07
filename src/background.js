@@ -14,7 +14,7 @@
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log("onInstalled.");
-  chrome.storage.sync.get()
+  chrome.storage.local.get()
     .then((res) => {
       if (Object.keys(res).length === 0) {
         let storageInit = {
@@ -22,7 +22,7 @@ chrome.runtime.onInstalled.addListener(() => {
           lastIdx: 0,
           temp: {}
         };
-        chrome.storage.sync.set(storageInit)
+        chrome.storage.local.set(storageInit)
           .then(() => {
             console.log("storage set.");
             console.log(storageInit);
@@ -56,7 +56,7 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
 });
 
 chrome.windows.onRemoved.addListener((winId) => {
-  chrome.storage.sync.get(["temp"], (res) => {
+  chrome.storage.local.get(["temp"], (res) => {
     let temp = res.temp;
     if (Object.keys(temp).includes(winId + "")) {
       delete temp[winId];
@@ -65,7 +65,7 @@ chrome.windows.onRemoved.addListener((winId) => {
     } else {
       console.log(`closed window ${winId} was not in temp.`);
     }
-    chrome.storage.sync.set({ temp });
+    chrome.storage.local.set({ temp });
   })
 });
 

@@ -475,11 +475,11 @@ nav hr {
     display: none;
 }
 .tabItem {
-    width: calc(100% - 1.5rem);
+    width: calc(100% - 0.95em);
     height: 1.5rem;
     /* background-color: #d9d9d9; */
     margin-bottom: 2px;
-    padding: 0 0.25em 0 0.5em;
+    padding: 0 0.5em;
     color: #333333;
 
     display: flex;
@@ -493,14 +493,14 @@ nav hr {
     padding: 0;
 }
 .tabItem .title {
-    max-width: 50%;
+    max-width: 55%;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
     /* padding-left: 5px; */
 }
 .tabItem .url {
-    max-width: 45%;
+    max-width: 40%;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -531,7 +531,7 @@ nav hr {
 
 #btn {
     width: 100%;
-    height: 80px;
+    height: 82.5px;
     margin-top: 1rem;
     border-radius: 10px;
     user-select: none;
@@ -544,16 +544,32 @@ nav hr {
 #btn span {
     font-family: "Open Sans", sans-serif;
     font-weight: 700;
-    font-size: 16px;
-    color: gray;
+    font-size: 18px;
+    /* color: gray; */
     margin-left: .75rem;
 }
 
 #btn.open {
-    background-color: #b4e4cd;
+    /* background-color: #b4e4cd; */
+    background-color: #00b300;
+    color: #f2f2f2;
+    font-weight: 700;
 }
-#btn.delete {
-    background-color: red;
+#btn.open:active {
+    background-color: green;
 }
+#btn.delete.disabled {
+    background-color: #ffcccc;
+}
+#btn.delete:not(.disabled) {
+    background-color: #ff1a1a;
+}
+/* #btn.delete:hover { */
+    /* background-color: #ff3333; */
+/* } */
+#btn:not(.disabled).delete:active {
+    background-color: #ff1a1a;
+}
+
 
 /* ------------------------------------------------- */

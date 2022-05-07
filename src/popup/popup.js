@@ -13,7 +13,7 @@ window.addEventListener("load", async (e) => {
   console.log(moment(new Date().toISOString()).fromNow());
 
   let curWin = await chrome.windows.getCurrent();
-  chrome.storage.sync.get()
+  chrome.storage.local.get()
     .then((res) => {
       data = res.data;
       lastIdx = res.lastIdx;
@@ -25,17 +25,20 @@ window.addEventListener("load", async (e) => {
         temp,
         curWin
       });
+      console.log(Object.keys(res.data)
+        .sort((a, b) => (moment(res.data[b].lastUpdate).isBefore(moment(res.data[a].lastUpdate))) ? -1 : 1));
 
-      Object.keys(res.data).forEach((idx) => {
-        // .sort((a, b) => res.data[a].lastUpdate - res.data[b].lastUpdate)
-        // let korTime = new Date(data[idx].lastOpen);
-        // console.log({
-        //   korTime,
-        //   type: typeof korTime
-        // })
-        // korTime.setHours(korTime.getHours() + 9);
-        document.getElementById("list").appendChild(createItemElement(data[idx].titles[0], data[idx].urls.length, data[idx].lastUpdate, idx));
-      })
+      Object.keys(res.data)
+        .sort((a, b) => (moment(res.data[b].lastUpdate).isBefore(moment(res.data[a].lastUpdate))) ? -1 : 1)
+        .forEach((idx) => {
+          // let korTime = new Date(data[idx].lastOpen);
+          // console.log({
+          //   korTime,
+          //   type: typeof korTime
+          // })
+          // korTime.setHours(korTime.getHours() + 9);
+          document.getElementById("list").appendChild(createItemElement(data[idx].titles[0], data[idx].urls.length, data[idx].lastUpdate, idx));
+        })
     });
 
   // delete mode
@@ -43,132 +46,18 @@ window.addEventListener("load", async (e) => {
   deleteIcon.addEventListener("click", () => {
     // change nav contents
 
-    mode = "delete";
-
-    document.body.classList.remove("open");
-    document.body.classList.remove("edit");
-    document.body.classList.add("delete");
-
-    document.querySelector("nav.open").style.display = "none";
-    document.querySelector("nav.delete").style.display = "";
+    modeChangeUI("delete");
     console.log("changed..");
   });
   let exitIcon = document.getElementsByClassName("exitIcon");
   Array.from(exitIcon).forEach((elem) => {
     elem.addEventListener("click", () => {
 
-      mode = "open";
-
-      document.body.classList.remove("edit");
-      document.body.classList.remove("delete");
-      document.body.classList.add("open");
-
-      document.querySelector("nav.open").style.display = "";
-      document.querySelector("nav.edit").style.display = "none";
-      document.querySelector("nav.delete").style.display = "none";
+      modeChangeUI("open");
     });
   });
 
-  let btn = document.getElementById("btn");
-  btn.addEventListener("click", async () => {
-    switch (mode) {
-      case "open": {
-        console.log("open mode.");
-        let curWin = await chrome.windows.getCurrent();
-        let newData = await generateData();
-        let tabs = await chrome.tabs.query({ currentWindow: true });
-        // console.log(newData);
-        // let lastOpen = new Date(newData.lastOpen);
-        // let lastUpdate = new Date(newData.lastUpdate);
-        // lastOpen.setHours(lastOpen.getHours() + 9);
-        // lastUpdate.setHours(lastUpdate.getHours() + 9);
-        // console.log(newData);
-        console.log("fetched: Object.keys(temp), curWin.id");
-        console.log({
-          objectKeysTemp: Object.keys(temp),
-          id: curWin.id
-        })
 
-        if (Object.keys(temp).includes(curWin.id.toString())) {
-          // update element
-          chrome.runtime.sendMessage({ where: "click save button: check if temp includes curWin.id", does: Object.keys(temp).includes(curWin.id.toString()) })
-          let currIdx = temp[curWin.id];
-          let toUpdate = data[currIdx];
-          console.log("temp includes curWin.id: temp[curWin.id].toString(), TABS");
-          console.log({
-            temp,
-            currIdx,
-            curWinId: curWin.id.toString(),
-            toUpdate,
-            tabs
-          });
-          console.log({
-            data,
-            lastIdx,
-            temp,
-            curWin
-          });
-          toUpdate.lastUpdate = newData.lastUpdate;
-          // toUpdate.lastUpdate.setHours(toUpdate.lastUpdate.getHours() + 9);
-          toUpdate.urls = newData.urls;
-          toUpdate.titles = newData.titles;
-          console.log({
-            what: "updating object",
-            toUpdate
-          });
-          document.querySelector(`[data-idx='${currIdx}']`).replaceWith(createItemElement(tabs[0].title, toUpdate.urls.length, toUpdate.lastUpdate, currIdx));
-          document.querySelector(`[data-idx='${currIdx}']`).classList.add("blink");
-          // document.querySelector(`[data-idx='${currIdx}']`).classList.remove("blink");
-          // temp[curWin.id.toString()] = currIdx;
-        } else {
-          // add data and new element
-          // chrome.runtime.sendMessage({ does: Object.keys(temp).includes(curWin.id.toString()), temp, id: curWin.id });
-          data[++lastIdx] = newData;
-          console.log("adding new element: current lastIdx, data");
-          console.log({
-            lastIdx,
-            data
-          });
-          document.getElementById("list").appendChild(createItemElement(newData.titles[0], newData.urls.length, newData.lastUpdate, lastIdx));
-          // add or update current window to temp
-          temp[curWin.id.toString()] = lastIdx;
-        }
-
-
-        // save datas
-        // alternative for ignorant about beforeunload
-        chrome.storage.sync.set({
-          data: data,
-          lastIdx: lastIdx,
-        }).then(() => {
-          console.log("data, lastIdx, temp is saved.");
-        });
-        chrome.storage.sync.set({ temp: temp }).then(() => {
-          console.log("temp is saved.");
-          console.log(temp);
-        });
-
-        break;
-      };
-      case "delete": {
-        console.log("delete mode.");
-        Array.from(document.querySelectorAll(`.item.selected`)).forEach(elem => {
-          elem.remove();
-        });
-        toDelete.forEach((idx) => {
-          delete data[idx];
-        });
-        chrome.storage.sync.set({ data: data })
-          .then(() => {
-            console.log("datas deleted successfully.");
-          })
-        document.getElementById("count").textContent = "0";
-        toDelete = [];
-        exitIcon[1].click();
-        break;
-      };
-    }
-  });
 
   // input reset button
   // let input = document.getElementById("searchInput");
@@ -225,34 +114,19 @@ window.addEventListener("load", async (e) => {
 //     });
 // });
 
-// save item
-document.getElementById("btn").addEventListener("click", async (e) => {
-  let curWin = await chrome.windows.getCurrent();
-  let newData = await generateData();
-  let tabs = await chrome.tabs.query({ currentWindow: true });
-  // console.log(newData);
-  let lastOpen = new Date(newData.lastOpen);
-  let lastUpdate = new Date(newData.lastUpdate);
-  // lastOpen.setHours(lastOpen.getHours() + 9);
-  // lastUpdate.setHours(lastUpdate.getHours() + 9);
-  // console.log(newData);
-  console.log("fetched: Object.keys(temp), curWin.id");
-  console.log({
-    objectKeysTemp: Object.keys(temp),
-    id: curWin.id
-  })
+function updateItem(newData, idx) {
 
-  if (Object.keys(temp).includes(curWin.id.toString())) {
-    // update element
-    chrome.runtime.sendMessage({ where: "click save button: check if temp includes curWin.id", does: Object.keys(temp).includes(curWin.id.toString()) })
-    let currIdx = temp[curWin.id];
-    let toUpdate = data[currIdx];
-    console.log("toUpdate is :");
-    console.log(toUpdate);
-    // console.log("temp includes curWin.id: temp[curWin.id].toString(), TABS");
+  // update element
+  // chrome.runtime.sendMessage({ where: "click save button: check if temp includes curWin.id", does: Object.keys(temp).includes(curWin.id.toString()) })
+
+  let toUpdate = data[idx];
+  if (toUpdate === undefined) {
+    createItem(newData, idx);
+  } else {
+    console.log("temp includes curWin.id: temp[curWin.id].toString(), TABS");
     // console.log({
     //   temp,
-    //   currIdx,
+    //   idx,
     //   curWinId: curWin.id.toString(),
     //   toUpdate,
     //   tabs
@@ -263,6 +137,12 @@ document.getElementById("btn").addEventListener("click", async (e) => {
     //   temp,
     //   curWin
     // });
+    console.log({
+      temp,
+      idx,
+      toUpdate,
+      newData
+    });
     toUpdate.lastUpdate = newData.lastUpdate;
     // toUpdate.lastUpdate.setHours(toUpdate.lastUpdate.getHours() + 9);
     toUpdate.urls = newData.urls;
@@ -271,47 +151,193 @@ document.getElementById("btn").addEventListener("click", async (e) => {
       what: "updating object",
       toUpdate
     });
-    document.querySelector(`[data-idx='${currIdx}']`).replaceWith(createItemElement(tabs[0].title, toUpdate.urls.length, toUpdate.lastUpdate, currIdx));
+    document.querySelector(`[data-idx='${idx}']`).replaceWith(createItemElement(tabs[0].title, toUpdate.urls.length, toUpdate.lastUpdate, idx));
+    document.querySelector(`[data-idx='${idx}']`).classList.add("blink");
+    // document.querySelector(`[data-idx='${currIdx}']`).classList.remove("blink");
     // temp[curWin.id.toString()] = currIdx;
-  } else {
-    // add data and new element
-    // chrome.runtime.sendMessage({ does: Object.keys(temp).includes(curWin.id.toString()), temp, id: curWin.id });
-    data[++lastIdx] = newData;
-    console.log("adding new element: current lastIdx, data");
-    console.log({
-      lastIdx,
-      data
-    });
-    document.getElementById("list").appendChild(createItemElement(newData.titles[0], newData.urls.length, lastUpdate, lastIdx));
-    // add or update current window to temp
-    temp[curWin.id.toString()] = lastIdx;
   }
+}
 
-
-  // save datas
-  // alternative for ignorant about beforeunload
-  chrome.storage.sync.set({
-    data: data,
-    lastIdx: lastIdx,
-  }).then(() => {
-    console.log("data, lastIdx, temp is saved.");
+function createItem(newData, idx) {
+  // add data and new element
+  // chrome.runtime.sendMessage({ does: Object.keys(temp).includes(curWin.id.toString()), temp, id: curWin.id });
+  // if (data[idx] === undefined) {
+  //   c
+  // }
+  data[idx] = newData;
+  console.log("adding new element: current lastIdx, data");
+  console.log({
+    lastIdx,
+    data
   });
-  chrome.storage.sync.set({ temp: temp }).then(() => {
-    console.log("temp is saved.");
-    console.log(temp);
-  });
+  document.getElementById("list").appendChild(createItemElement(newData.titles[0], newData.urls.length, newData.lastUpdate, idx));
+  // add or update current window to temp
+  temp[curWin.id.toString()] = lastIdx;
+}
+
+// save item
+let btn = document.getElementById("btn");
+btn.addEventListener("click", async () => {
+  console.log(mode);
+  console.log("hihihihihihihihihihihi");
+  switch (mode) {
+    case "open": {
+      console.log("open mode.");
+      let curWin = await chrome.windows.getCurrent();
+      let newData = await generateData();
+      let tabs = await chrome.tabs.query({ currentWindow: true });
+
+      // console.log(newData);
+      // let lastOpen = new Date(newData.lastOpen);
+      // let lastUpdate = new Date(newData.lastUpdate);
+      // lastOpen.setHours(lastOpen.getHours() + 9);
+      // lastUpdate.setHours(lastUpdate.getHours() + 9);
+      // console.log(newData);
+      console.log("fetched: Object.keys(temp), curWin.id");
+      console.log({
+        objectKeysTemp: Object.keys(temp),
+        id: curWin.id,
+        newData
+      });
+
+      console.log(temp);
+      updateTemp();
+      console.log("updated temp. now temp is ");
+      console.log(temp);
+
+      if (Object.keys(temp).includes(curWin.id.toString())) {
+        let currIdx = temp[curWin.id];
+        updateItem(newData, currIdx);
+      } else {
+        createItem(newData, ++lastIdx);
+      }
+      // save datas
+      // alternative for ignorant about beforeunload
+      chrome.storage.local.set({
+        data: data,
+        lastIdx: lastIdx,
+      }).then(() => {
+        console.log("data, lastIdx, temp is saved.");
+      });
+      chrome.storage.local.set({ temp: temp }).then(() => {
+        console.log("temp is saved.");
+        console.log(temp);
+      });
+
+      break;
+    };
+    case "delete": {
+      if (toDelete.length > 0) {
+        console.log("delete mode.");
+        Array.from(document.querySelectorAll(`.item.selected`)).forEach(elem => {
+          elem.remove();
+        });
+        toDelete.forEach((idx) => {
+          delete data[idx];
+        });
+        toDelete = [];
+        chrome.storage.local.set({ data: data })
+          .then(() => {
+            console.log("datas deleted successfully.");
+          })
 
 
-  //   .then(() => {
-  //     console.log("storage 'temp' is now set to :");
-  //     console.log({ temp: temp });
-  //   });
-  // chrome.storage.sync.set({ data: data })
-  //   .then(() => {
-  //     console.log("storage 'data' is now set to :");
-  //     console.log({ data: data });
-  //   });
+        modeChangeUI("open");
+      }
+
+      break;
+    };
+  }
 });
+// document.getElementById("btn").addEventListener("click", async (e) => {
+//   let curWin = await chrome.windows.getCurrent();
+//   let newData = await generateData();
+//   let tabs = await chrome.tabs.query({ currentWindow: true });
+//   // console.log(newData);
+//   let lastOpen = new Date(newData.lastOpen);
+//   let lastUpdate = new Date(newData.lastUpdate);
+//   // lastOpen.setHours(lastOpen.getHours() + 9);
+//   // lastUpdate.setHours(lastUpdate.getHours() + 9);
+//   // console.log(newData);
+//   console.log("fetched: Object.keys(temp), curWin.id");
+//   console.log({
+//     objectKeysTemp: Object.keys(temp),
+//     id: curWin.id
+//   })
+
+//   if (Object.keys(temp).includes(curWin.id.toString())) {
+//     // update element
+//     chrome.runtime.sendMessage({ where: "click save button: check if temp includes curWin.id", does: Object.keys(temp).includes(curWin.id.toString()) })
+//     let currIdx = temp[curWin.id];
+//     let toUpdate = data[currIdx];
+//     console.log("toUpdate is :");
+//     console.log(toUpdate);
+//     // console.log("temp includes curWin.id: temp[curWin.id].toString(), TABS");
+//     // console.log({
+//     //   temp,
+//     //   currIdx,
+//     //   curWinId: curWin.id.toString(),
+//     //   toUpdate,
+//     //   tabs
+//     // });
+//     // console.log({
+//     //   data,
+//     //   lastIdx,
+//     //   temp,
+//     //   curWin
+//     // });
+//     toUpdate.lastUpdate = newData.lastUpdate;
+//     // toUpdate.lastUpdate.setHours(toUpdate.lastUpdate.getHours() + 9);
+//     toUpdate.urls = newData.urls;
+//     toUpdate.titles = newData.titles;
+//     console.log({
+//       what: "updating object",
+//       toUpdate
+//     });
+//     document.querySelector(`[data-idx='${currIdx}']`).remove();
+//     let list = document.getElementById("list");
+//     list.insertBefore(createItemElement(tabs[0].title, toUpdate.urls.length, toUpdate.lastUpdate, currIdx), list.firstChild);
+//     // temp[curWin.id.toString()] = currIdx;
+//   } else {
+//     // add data and new element
+//     // chrome.runtime.sendMessage({ does: Object.keys(temp).includes(curWin.id.toString()), temp, id: curWin.id });
+//     data[++lastIdx] = newData;
+//     console.log("adding new element: current lastIdx, data");
+//     console.log({
+//       lastIdx,
+//       data
+//     });
+//     let list = document.getElementById("list");
+//     list.insertBefore(createItemElement(newData.titles[0], newData.urls.length, lastUpdate, lastIdx), list.firstChild);
+//     // add or update current window to temp
+//     temp[curWin.id.toString()] = lastIdx;
+//   }
+
+
+//   // save datas
+//   // alternative for ignorant about beforeunload
+//   chrome.storage.local.set({
+//     data: data,
+//     lastIdx: lastIdx,
+//   }).then(() => {
+//     console.log("data, lastIdx, temp is saved.");
+//   });
+//   chrome.storage.local.set({ temp: temp }).then(() => {
+//     console.log("temp is saved.");
+//     console.log(temp);
+//   });
+
+
+//   //   .then(() => {
+//   //     console.log("storage 'temp' is now set to :");
+//   //     console.log({ temp: temp });
+//   //   });
+//   // chrome.storage.local.set({ data: data })
+//   //   .then(() => {
+//   //     console.log("storage 'data' is now set to :");
+//   //     console.log({ data: data });
+//   //   });
+// });
 
 function createItemElement(nameString, moreCount, timeString, idx) {
   // console.log(`createItemElement : idx is ${idx}`);
@@ -396,10 +422,14 @@ function createItemElement(nameString, moreCount, timeString, idx) {
         elem.classList.remove("selected");
         toDelete = toDelete.filter(ind => ind !== idx);
         document.getElementById("count").innerText = toDelete.length.toString();
+
+
+        document.getElementById("btn").classList.add("disabled");
       } else {
         elem.classList.add("selected");
         toDelete.push(idx);
         document.getElementById("count").innerText = toDelete.length.toString();
+        document.getElementById("btn").classList.remove("disabled");
       }
       console.log(toDelete);
     }
@@ -420,7 +450,17 @@ function createItemElement(nameString, moreCount, timeString, idx) {
     let urlSpan = document.createElement("span");
     urlSpan.classList.add("url");
     urlSpan.setAttribute("title", urls[i]);
-    urlSpan.textContent = urls[i];
+    let currUrl = urls[i];
+
+    if (currUrl.startsWith("https://")) {
+      currUrl = currUrl.slice(8)
+    } else if (currUrl.startsWith("http://")) {
+      currUrl = currUrl.slice(7);
+    }
+    if (currUrl.startsWith("www.")) {
+      currUrl = currUrl.slice(4);
+    }
+    urlSpan.textContent = currUrl;
 
     currTabItem.appendChild(titleSpan);
     currTabItem.appendChild(urlSpan);
@@ -482,7 +522,7 @@ async function openWindow(idx) {
       urls: currData.urls
     });
     temp[currWin.id.toString()] = parseInt(idx);
-    chrome.storage.sync.set({ temp: temp })
+    chrome.storage.local.set({ temp: temp })
       .then(() => {
         chrome.runtime.sendMessage({
           tempChanged: temp
@@ -508,13 +548,69 @@ async function openWindow(idx) {
 
 }
 
-// update item
-function updateItem(idx) {
-  // set db
-  data[idx] = generateData();
-  // change ui
-  let elem = document.querySelector(`[data-idx='${idx}']`);
+function modeChangeUI(modeName) {
+  if (modeName === "open") {
+    mode = "open";
+    console.log(mode);
+
+    document.body.classList.remove("edit");
+    document.body.classList.remove("delete");
+    document.body.classList.add("open");
+
+    document.querySelector("nav.open").style.display = "";
+    document.querySelector("nav.delete").style.display = "none";
+    // document.querySelector("nav.edit").style.display = "none";
+
+    document.getElementById("btn").classList.add("open");
+    document.getElementById("btn").classList.remove("delete");
+    document.querySelector("#btn span").textContent = "Add Current Window";
+
+    document.querySelector("#btn img").src = "../../assets/icons/iconmonstr-plus-2.svg";
+  } else if (modeName === "delete") {
+    mode = "delete";
+    console.log(mode);
+
+    document.body.classList.remove("open");
+    document.body.classList.remove("edit");
+    document.body.classList.add("delete");
+
+    document.querySelector("nav.open").style.display = "none";
+    document.querySelector("nav.delete").style.display = "";
+
+    document.getElementById("btn").classList.remove("open");
+    document.getElementById("btn").classList.add("delete");
+    document.getElementById("btn").classList.add("disabled");
+    document.querySelector("#btn span").textContent = "Remove";
+    document.querySelector("#btn img").src = "../../assets/icons/iconmonstr-x-mark-9.svg";
+
+    Array.from(document.querySelectorAll(".item.selected")).forEach(item => {
+      item.classList.remove("selected");
+    });
+
+    document.getElementById("count").textContent = "0";
+    toDelete = [];
+  }
 }
+
+function updateTemp() {
+  chrome.windows.getAll((windows) => {
+    let openWinIds = windows.map(window => window.id);
+    console.log(openWinIds);
+    Object.keys(temp).forEach(winId => {
+      if (!openWinIds.includes(winId)) {
+        delete temp[winId];
+      }
+    })
+  });
+}
+
+// update item
+// function updateItem(idx) {
+//   // set db
+//   data[idx] = generateData();
+//   // change ui
+//   let elem = document.querySelector(`[data-idx='${idx}']`);
+// }
 
 async function generateData(tabs) {
   let curTabs = await chrome.tabs.query({ currentWindow: true });

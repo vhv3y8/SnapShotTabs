@@ -1,10 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
 
+@keyframes upload-blink {
+  10% {
+    background-color: greenyellow;
+  }
+}
+
 body {
   font-family: "Open Sans", sans-serif;
   /* font-size: 20px; */
 
   margin: 1rem;
+}
+
+a {
+  border:none;
+  outline: none;
+  text-decoration: none;
 }
 
 .container {
@@ -44,4 +56,37 @@ body {
   font-size: 16px;
   font-weight: 700;
   color: #f2f2f2;
+}
+
+.done {
+  animation: upload-blink .8s linear;
+}
+
+
+#uploadDiv p {
+  font-size: 13px;
+}
+
+#submit {
+  width: 80px;
+  height: 40px;
+  background-color: #00b300;
+  margin-top: 1rem;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+
+  user-select: none;
+
+}
+#submit:hover {
+  background-color: #009900;
+}
+#submit:active {
+  background-color: green;
 }
