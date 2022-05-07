@@ -1,10 +1,17 @@
-import { parseDate, createTitle } from "../background.js";
+// import { createTitle } from "../background.js";
 
 let data;
 let lastIdx;
 let temp;
+let mode = "open"; // "open" | "edit" | "delete"
+let toDelete = [];
 
 window.addEventListener("load", async (e) => {
+  document.querySelector("nav.open").style.display = "true";
+  document.querySelector("nav.edit").style.display = "none";
+  document.querySelector("nav.delete").style.display = "none";
+  console.log(moment(new Date().toISOString()).fromNow());
+
   let curWin = await chrome.windows.getCurrent();
   chrome.storage.sync.get()
     .then((res) => {
@@ -20,15 +27,184 @@ window.addEventListener("load", async (e) => {
       });
 
       Object.keys(res.data).forEach((idx) => {
-        let korTime = new Date(data[idx].lastOpen);
+        // .sort((a, b) => res.data[a].lastUpdate - res.data[b].lastUpdate)
+        // let korTime = new Date(data[idx].lastOpen);
         // console.log({
         //   korTime,
         //   type: typeof korTime
         // })
-        korTime.setHours(korTime.getHours() + 9);
-        document.getElementById("list").appendChild(createItemElement(createTitle(data[idx].tags[0], data[idx].urls.length), parseDate(korTime), idx));
+        // korTime.setHours(korTime.getHours() + 9);
+        document.getElementById("list").appendChild(createItemElement(data[idx].titles[0], data[idx].urls.length, data[idx].lastUpdate, idx));
       })
     });
+
+  // delete mode
+  let deleteIcon = document.getElementById("deleteIcon");
+  deleteIcon.addEventListener("click", () => {
+    // change nav contents
+
+    mode = "delete";
+
+    document.body.classList.remove("open");
+    document.body.classList.remove("edit");
+    document.body.classList.add("delete");
+
+    document.querySelector("nav.open").style.display = "none";
+    document.querySelector("nav.delete").style.display = "";
+    console.log("changed..");
+  });
+  let exitIcon = document.getElementsByClassName("exitIcon");
+  Array.from(exitIcon).forEach((elem) => {
+    elem.addEventListener("click", () => {
+
+      mode = "open";
+
+      document.body.classList.remove("edit");
+      document.body.classList.remove("delete");
+      document.body.classList.add("open");
+
+      document.querySelector("nav.open").style.display = "";
+      document.querySelector("nav.edit").style.display = "none";
+      document.querySelector("nav.delete").style.display = "none";
+    });
+  });
+
+  let btn = document.getElementById("btn");
+  btn.addEventListener("click", async () => {
+    switch (mode) {
+      case "open": {
+        console.log("open mode.");
+        let curWin = await chrome.windows.getCurrent();
+        let newData = await generateData();
+        let tabs = await chrome.tabs.query({ currentWindow: true });
+        // console.log(newData);
+        // let lastOpen = new Date(newData.lastOpen);
+        // let lastUpdate = new Date(newData.lastUpdate);
+        // lastOpen.setHours(lastOpen.getHours() + 9);
+        // lastUpdate.setHours(lastUpdate.getHours() + 9);
+        // console.log(newData);
+        console.log("fetched: Object.keys(temp), curWin.id");
+        console.log({
+          objectKeysTemp: Object.keys(temp),
+          id: curWin.id
+        })
+
+        if (Object.keys(temp).includes(curWin.id.toString())) {
+          // update element
+          chrome.runtime.sendMessage({ where: "click save button: check if temp includes curWin.id", does: Object.keys(temp).includes(curWin.id.toString()) })
+          let currIdx = temp[curWin.id];
+          let toUpdate = data[currIdx];
+          console.log("temp includes curWin.id: temp[curWin.id].toString(), TABS");
+          console.log({
+            temp,
+            currIdx,
+            curWinId: curWin.id.toString(),
+            toUpdate,
+            tabs
+          });
+          console.log({
+            data,
+            lastIdx,
+            temp,
+            curWin
+          });
+          toUpdate.lastUpdate = newData.lastUpdate;
+          // toUpdate.lastUpdate.setHours(toUpdate.lastUpdate.getHours() + 9);
+          toUpdate.urls = newData.urls;
+          toUpdate.titles = newData.titles;
+          console.log({
+            what: "updating object",
+            toUpdate
+          });
+          document.querySelector(`[data-idx='${currIdx}']`).replaceWith(createItemElement(tabs[0].title, toUpdate.urls.length, toUpdate.lastUpdate, currIdx));
+          document.querySelector(`[data-idx='${currIdx}']`).classList.add("blink");
+          // document.querySelector(`[data-idx='${currIdx}']`).classList.remove("blink");
+          // temp[curWin.id.toString()] = currIdx;
+        } else {
+          // add data and new element
+          // chrome.runtime.sendMessage({ does: Object.keys(temp).includes(curWin.id.toString()), temp, id: curWin.id });
+          data[++lastIdx] = newData;
+          console.log("adding new element: current lastIdx, data");
+          console.log({
+            lastIdx,
+            data
+          });
+          document.getElementById("list").appendChild(createItemElement(newData.titles[0], newData.urls.length, newData.lastUpdate, lastIdx));
+          // add or update current window to temp
+          temp[curWin.id.toString()] = lastIdx;
+        }
+
+
+        // save datas
+        // alternative for ignorant about beforeunload
+        chrome.storage.sync.set({
+          data: data,
+          lastIdx: lastIdx,
+        }).then(() => {
+          console.log("data, lastIdx, temp is saved.");
+        });
+        chrome.storage.sync.set({ temp: temp }).then(() => {
+          console.log("temp is saved.");
+          console.log(temp);
+        });
+
+        break;
+      };
+      case "delete": {
+        console.log("delete mode.");
+        Array.from(document.querySelectorAll(`.item.selected`)).forEach(elem => {
+          elem.remove();
+        });
+        toDelete.forEach((idx) => {
+          delete data[idx];
+        });
+        chrome.storage.sync.set({ data: data })
+          .then(() => {
+            console.log("datas deleted successfully.");
+          })
+        document.getElementById("count").textContent = "0";
+        toDelete = [];
+        exitIcon[1].click();
+        break;
+      };
+    }
+  });
+
+  // input reset button
+  // let input = document.getElementById("searchInput");
+  // let inputReset = document.getElementById("inputReset");
+  // document.addEventListener("keyup", (e) => {
+  //   if (document.activeElement === input) {
+  //     if (input.value === "") {
+  //       inputReset.style.visibility = "hidden";
+  //     } else {
+  //       inputReset.style.visibility = "visible";
+  //     }
+  //   }
+  // });
+  // inputReset.addEventListener("click", (e) => {
+  //   input.value = "";
+  //   inputReset.style.visibility = "hidden";
+  //   input.focus();
+  // });
+
+  // let list = document.getElementById("list");
+  // edit mode
+  // let editIcon = document.getElementById("editIcon");
+  // editIcon.addEventListener("click", () => {
+  //   // change nav contents
+
+  //   mode = "edit";
+  //   document.body.classList.remove("open");
+  //   document.body.classList.remove("delete");
+  //   document.body.classList.add("edit");
+
+  //   document.querySelector("nav.open").style.display = "none";
+  //   document.querySelector("nav.edit").style.display = "";
+  //   console.log("changed..");
+  // });
+
+
 });
 
 // https://stackoverflow.com/a/60361626/13692546
@@ -50,15 +226,15 @@ window.addEventListener("load", async (e) => {
 // });
 
 // save item
-document.getElementById("buttons").addEventListener("click", async (e) => {
+document.getElementById("btn").addEventListener("click", async (e) => {
   let curWin = await chrome.windows.getCurrent();
   let newData = await generateData();
   let tabs = await chrome.tabs.query({ currentWindow: true });
   // console.log(newData);
   let lastOpen = new Date(newData.lastOpen);
   let lastUpdate = new Date(newData.lastUpdate);
-  lastOpen.setHours(lastOpen.getHours() + 9);
-  lastUpdate.setHours(lastUpdate.getHours() + 9);
+  // lastOpen.setHours(lastOpen.getHours() + 9);
+  // lastUpdate.setHours(lastUpdate.getHours() + 9);
   // console.log(newData);
   console.log("fetched: Object.keys(temp), curWin.id");
   console.log({
@@ -70,40 +246,43 @@ document.getElementById("buttons").addEventListener("click", async (e) => {
     // update element
     chrome.runtime.sendMessage({ where: "click save button: check if temp includes curWin.id", does: Object.keys(temp).includes(curWin.id.toString()) })
     let currIdx = temp[curWin.id];
-    let curr = data[currIdx];
-    console.log("temp includes curWin.id: temp[curWin.id].toString(), TABS");
-    console.log({
-      temp,
-      currIdx,
-      curWinId: curWin.id.toString(),
-      curr,
-      tabs
-    });
-    console.log({
-      data,
-      lastIdx,
-      temp,
-      curWin
-    });
-    curr.lastUpdate = new Date(newData.lastUpdate);
-    curr.lastUpdate.setHours(curr.lastUpdate.getHours() + 9);
-    curr.urls = newData.urls;
+    let toUpdate = data[currIdx];
+    console.log("toUpdate is :");
+    console.log(toUpdate);
+    // console.log("temp includes curWin.id: temp[curWin.id].toString(), TABS");
+    // console.log({
+    //   temp,
+    //   currIdx,
+    //   curWinId: curWin.id.toString(),
+    //   toUpdate,
+    //   tabs
+    // });
+    // console.log({
+    //   data,
+    //   lastIdx,
+    //   temp,
+    //   curWin
+    // });
+    toUpdate.lastUpdate = newData.lastUpdate;
+    // toUpdate.lastUpdate.setHours(toUpdate.lastUpdate.getHours() + 9);
+    toUpdate.urls = newData.urls;
+    toUpdate.titles = newData.titles;
     console.log({
       what: "updating object",
-      curr
+      toUpdate
     });
-    document.querySelector(`[data-idx='${currIdx}']`).replaceWith(createItemElement(createTitle(tabs[0].title, curr.urls.length), parseDate(curr.lastUpdate), currIdx));
+    document.querySelector(`[data-idx='${currIdx}']`).replaceWith(createItemElement(tabs[0].title, toUpdate.urls.length, toUpdate.lastUpdate, currIdx));
     // temp[curWin.id.toString()] = currIdx;
   } else {
     // add data and new element
     // chrome.runtime.sendMessage({ does: Object.keys(temp).includes(curWin.id.toString()), temp, id: curWin.id });
-    // data[++lastIdx] = newData;
+    data[++lastIdx] = newData;
     console.log("adding new element: current lastIdx, data");
     console.log({
       lastIdx,
       data
     });
-    document.getElementById("list").appendChild(createItemElement(createTitle(newData.tags[0], newData.urls.length), parseDate(lastUpdate), lastIdx));
+    document.getElementById("list").appendChild(createItemElement(newData.titles[0], newData.urls.length, lastUpdate, lastIdx));
     // add or update current window to temp
     temp[curWin.id.toString()] = lastIdx;
   }
@@ -134,36 +313,153 @@ document.getElementById("buttons").addEventListener("click", async (e) => {
   //   });
 });
 
-// update item
-function updateItem(idx) {
-  // set db
-  data[idx] = generateData();
-  // change ui
-  let elem = document.querySelector(`[data-idx='${idx}']`);
-}
-
-async function generateData(tabs) {
-  let curTabs = await chrome.tabs.query({ currentWindow: true });
-  // time.setHours(time.getHours() + 9);
-  return { tags: [curTabs[0].title], path: [], lastOpen: new Date().toISOString(), lastUpdate: new Date().toISOString(), urls: curTabs.map(tab => tab.url) };
-}
-
-function createItemElement(nameString, timeString, idx = -1) {
+function createItemElement(nameString, moreCount, timeString, idx) {
   // console.log(`createItemElement : idx is ${idx}`);
+  let urls = data[idx].urls;
+  let titles = data[idx].titles;
+
   let elem = document.createElement("div");
+
   elem.classList.add("item");
   elem.dataset.idx = idx;
-  let nameTag = document.createElement("p");
-  nameTag.classList.add("itemName");
-  nameTag.innerHTML = nameString;
-  let timeTag = document.createElement("p");
-  timeTag.classList.add("itemTime");
-  timeTag.innerHTML = `updated: ${timeString}`;
-  elem.appendChild(nameTag);
-  elem.appendChild(timeTag);
-  elem.addEventListener("click", (e) => {
-    openWindow(idx);
+
+  let itemBody = document.createElement("div");
+  itemBody.classList.add("itemBody");
+
+  let itemName = document.createElement("div");
+  itemName.classList.add("itemName");
+  let itemNameSpan = document.createElement("span");
+  itemNameSpan.classList.add("title");
+  itemNameSpan.setAttribute("title", nameString);
+  itemNameSpan.textContent = nameString;
+  itemName.appendChild(itemNameSpan);
+  if (moreCount >= 2) {
+    let itemMoreSpan = document.createElement("span");
+    itemMoreSpan.classList.add("more");
+    itemMoreSpan.textContent = `and ${moreCount - 1} more`;
+    itemName.appendChild(itemMoreSpan);
+  } else {
+    itemName.querySelector(".title").style.maxWidth = "100%";
+    // itemNameSpan.style.maxWidth = "calc(100% - 100px)";
+  }
+  // itemName.addEventListener("click", (e) => {
+  //   if (mode === "open") {
+  //     openWindow(idx);
+  //   } else if (mode === "delete") {
+  //     console.log("mode is delete.");
+  //     if (Array.from(elem.classList).includes("selected")) {
+  //       elem.classList.remove("selected");
+  //       toDelete = toDelete.filter(ind => ind !== idx);
+  //       document.getElementById("count").innerText = toDelete.length.toString();
+  //     } else {
+  //       elem.classList.add("selected");
+  //       toDelete.push(idx);
+  //       document.getElementById("count").innerText = toDelete.length.toString();
+  //     }
+  //   }
+  // });
+
+  let itemTime = document.createElement("div");
+  itemTime.classList.add("itemTime");
+  let timeImg = document.createElement("img");
+  timeImg.setAttribute("src", "../../assets/icons/iconmonstr-synchronization-15.svg");
+  let timeSpan = document.createElement("span");
+  timeSpan.setAttribute("title", moment(timeString));
+  timeSpan.textContent = moment(timeString).fromNow();
+  itemTime.appendChild(timeImg);
+  itemTime.appendChild(timeSpan);
+  // itemTime.addEventListener("click", (e) => {
+  //   if (mode === "open") {
+  //     openWindow(idx);
+  //   } else if (mode === "delete") {
+  //     console.log("mode is delete.");
+  //     if (Array.from(elem.classList).includes("selected")) {
+  //       elem.classList.remove("selected");
+  //       toDelete = toDelete.filter(ind => ind !== idx);
+  //       document.getElementById("count").innerText = toDelete.length.toString();
+  //     } else {
+  //       elem.classList.add("selected");
+  //       toDelete.push(idx);
+  //       document.getElementById("count").innerText = toDelete.length.toString();
+  //     }
+  //   }
+  // });
+
+  itemBody.appendChild(itemName);
+  itemBody.appendChild(itemTime);
+  itemBody.addEventListener("click", (e) => {
+    if (mode === "open") {
+      openWindow(idx);
+    } else if (mode === "delete") {
+      console.log("mode is delete.");
+      if (Array.from(elem.classList).includes("selected")) {
+        elem.classList.remove("selected");
+        toDelete = toDelete.filter(ind => ind !== idx);
+        document.getElementById("count").innerText = toDelete.length.toString();
+      } else {
+        elem.classList.add("selected");
+        toDelete.push(idx);
+        document.getElementById("count").innerText = toDelete.length.toString();
+      }
+      console.log(toDelete);
+    }
   });
+
+  let tabDiv = document.createElement("div");
+  tabDiv.classList.add("tabDiv");
+  let tabContainer = document.createElement("div");
+  tabContainer.classList.add("tabContainer");
+  for (let i = 0; i < urls.length; i++) {
+    let currTabItem = document.createElement("div");
+    currTabItem.classList.add("tabItem");
+    // currTabItem.style.display = "none";
+    let titleSpan = document.createElement("span");
+    titleSpan.classList.add("title");
+    titleSpan.setAttribute("title", titles[i]);
+    titleSpan.textContent = titles[i];
+    let urlSpan = document.createElement("span");
+    urlSpan.classList.add("url");
+    urlSpan.setAttribute("title", urls[i]);
+    urlSpan.textContent = urls[i];
+
+    currTabItem.appendChild(titleSpan);
+    currTabItem.appendChild(urlSpan);
+    tabContainer.appendChild(currTabItem);
+  }
+
+  let expandTabs = document.createElement("div");
+  expandTabs.classList.add("expandTabs");
+  let arrow = document.createElement("img");
+  arrow.setAttribute("src", "../../assets/icons/iconmonstr-arrow-65.svg");
+  let showTabSpan = document.createElement("span");
+  showTabSpan.textContent = "show tabs";
+  expandTabs.appendChild(arrow);
+  expandTabs.appendChild(showTabSpan);
+
+  tabContainer.appendChild(expandTabs);
+
+  tabContainer.addEventListener("click", (e) => {
+    tabContainer.classList.toggle("expand");
+    if (Array.from(tabContainer.classList).includes("expand")) {
+      arrow.setAttribute("src", "../../assets/icons/iconmonstr-arrow-66.svg");
+      showTabSpan.textContent = "hide tabs";
+      // Array.from(tabContainer.querySelectorAll(".tabItem")).forEach((elem) => {
+      //   elem.style.display = "";
+      // });
+    } else {
+      arrow.setAttribute("src", "../../assets/icons/iconmonstr-arrow-65.svg");
+      showTabSpan.textContent = "show tabs";
+      // Array.from(tabContainer.querySelectorAll(".tabItem")).forEach((elem) => {
+      //   elem.style.display = "none";
+      // });
+    }
+  });
+
+  tabDiv.appendChild(tabContainer);
+
+  elem.appendChild(itemBody);
+  elem.appendChild(tabDiv);
+
   return elem;
 }
 
@@ -210,6 +506,28 @@ async function openWindow(idx) {
     }
   }
 
+}
+
+// update item
+function updateItem(idx) {
+  // set db
+  data[idx] = generateData();
+  // change ui
+  let elem = document.querySelector(`[data-idx='${idx}']`);
+}
+
+async function generateData(tabs) {
+  let curTabs = await chrome.tabs.query({ currentWindow: true });
+  console.log(curTabs);
+  // time.setHours(time.getHours() + 9);
+  return {
+    tags: [],
+    path: [],
+    lastOpen: new Date().toISOString(),
+    lastUpdate: new Date().toISOString(),
+    urls: curTabs.map(tab => tab.url),
+    titles: curTabs.map(tab => tab.title)
+  };
 }
 
 // function getData(idx) {

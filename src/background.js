@@ -69,21 +69,21 @@ chrome.windows.onRemoved.addListener((winId) => {
   })
 });
 
-export function parseDate(date) {
-  return date.toISOString().replace("T", " ").slice(0, -5);
-}
+// export function parseDate(date) {
+//   return date.toISOString().replace("T", " ").slice(0, -5);
+// }
 
-export function createTitle(title, arrLength) {
-  // console.log({
-  //   title,
-  //   arrLength
-  // })
-  if (arrLength == 1) {
-    return `${title.slice(0, 35)}`;
-  } else {
-    return `${title.slice(0, 20)}... and ${arrLength - 1} more`;
-  }
-}
+// export function createTitle(title, arrLength) {
+//   // console.log({
+//   //   title,
+//   //   arrLength
+//   // })
+//   if (arrLength == 1) {
+//     return `${title.slice(0, 35)}`;
+//   } else {
+//     return `${title.slice(0, 20)}... and ${arrLength - 1} more`;
+//   }
+// }
 
 chrome.runtime.onMessage.addListener((req, sender, sendRes) => {
   console.log("message!");

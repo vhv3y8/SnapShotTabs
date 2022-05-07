@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+body {
+  font-family: "Open Sans", sans-serif;
+  /* font-size: 20px; */
+
+  margin: 1rem;
+}
+
+.container {
+  margin-left: 1rem;
+
+}
+
+.title {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.title h2 {
+  margin-left: .7rem;
+}
+
+#downloadIcon {
+  width: 270px;
+  height: 70px;
+  border-radius: 10px;
+  background-color: #406af2;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  user-select: none;
+}
+#downloadIcon:hover {
+  background-color: #2857f0;
+}
+#downloadIcon:active {
+  background-color: #1144ee;
+}
+#downloadIcon span {
+  margin-left: 0.4rem;
+  font-size: 16px;
+  font-weight: 700;
+  color: #f2f2f2;
+}

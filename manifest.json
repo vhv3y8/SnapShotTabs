@@ -8,6 +8,7 @@
   },
   "permissions": [
     "storage",
+    "unlimitedStorage",
     "tabs"
   ],
   "action": {
@@ -16,5 +17,6 @@
   "background": {
     "service_worker": "src/background.js",
     "type": "module"
-  }
+  },
+  "options_page": "src/options/options.html"
 }
