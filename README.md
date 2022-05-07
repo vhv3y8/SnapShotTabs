@@ -1,8 +1,12 @@
 ## SnapShotTabs
 
-탭들을 저장하고 꺼내쓰게 해주는 확장 프로그램입니다.
+chrome extension to help save and open many tabs at a time.
 
 ![example image](example.png)
+![exmple option](example-options.png)
 
-### 기능
+### more
+
+- [Moment.js](https://momentjs.com/) library used
+- icons from [iconmonstr.com](https://iconmonstr.com/)
 
