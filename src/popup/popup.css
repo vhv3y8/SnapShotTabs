@@ -6,8 +6,17 @@
     }
 }
 
-.blink {
+@keyframes blink-skyblue {
+    10% {
+        background-color: #00ffff;
+    }
+}
+
+.blinkGreen {
     animation: blink-green .9s linear;
+}
+.blinkSkyBlue {
+    animation: blink-skyblue .9s linear;
 }
 
 /* for test */
@@ -336,6 +345,9 @@ nav hr {
     /* font-family: 'NanumSquareRoundBold'; */
     font-family: 'Open Sans', sans-serif;
     user-select: none;
+}
+.item.current {
+  background-color: #d9d9d9;
 }
 .item:hover {
 

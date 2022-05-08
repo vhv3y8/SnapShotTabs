@@ -46,15 +46,18 @@ chrome.runtime.onInstalled.addListener(() => {
 //   urls: ["https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/slice", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date"]
 // }
 
+/*
 chrome.storage.onChanged.addListener(function (changes, namespace) {
   for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
     console.log(
       `Storage key "${key}" in namespace "${namespace}" changed.`,
-      `Old value was "${JSON.stringify(oldValue)}", new value is "${JSON.stringify(newValue)}".`
+      `Old value was "${JSON.stringify(oldValue, null, 2)}", new value is "${JSON.stringify(newValue, null, 2)}".`
     );
   }
 });
+*/
 
+/*
 chrome.windows.onRemoved.addListener((winId) => {
   chrome.storage.local.get(["temp"], (res) => {
     let temp = res.temp;
@@ -68,6 +71,7 @@ chrome.windows.onRemoved.addListener((winId) => {
     chrome.storage.local.set({ temp });
   })
 });
+*/
 
 // export function parseDate(date) {
 //   return date.toISOString().replace("T", " ").slice(0, -5);
