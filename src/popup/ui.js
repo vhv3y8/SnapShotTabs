@@ -1,11 +1,12 @@
 import {
-  addToTemp
-} from "data.js";
+  openWindow
+} from "./data.js";
+import {
+  mode,
+  toDelete
+} from "./popup.js";
 
-function createItemElement(nameString, moreCount, timeString, idx) {
-  let urls = data[idx].urls;
-  let titles = data[idx].titles;
-
+function createItemElement(nameString, tabCount, timeString, urls, titles, idx) {
   let elem = document.createElement("div");
 
   elem.classList.add("item");
@@ -21,10 +22,10 @@ function createItemElement(nameString, moreCount, timeString, idx) {
   itemNameSpan.setAttribute("title", nameString);
   itemNameSpan.textContent = nameString;
   itemName.appendChild(itemNameSpan);
-  if (moreCount >= 2) {
+  if (tabCount >= 2) {
     let itemMoreSpan = document.createElement("span");
     itemMoreSpan.classList.add("more");
-    itemMoreSpan.textContent = `and ${moreCount - 1} more`;
+    itemMoreSpan.textContent = `and ${tabCount - 1} more`;
     itemName.appendChild(itemMoreSpan);
   } else {
     itemName.querySelector(".title").style.maxWidth = "100%";
@@ -43,17 +44,32 @@ function createItemElement(nameString, moreCount, timeString, idx) {
   itemBody.appendChild(itemName);
   itemBody.appendChild(itemTime);
   itemBody.addEventListener("click", (e) => {
-    if (mode === "open") {
+    if (mode === "open" && !Array.from(elem.classList).includes("current")) {
       openWindow(idx);
+
+      document.querySelector(`[data-idx="${idx}"]`).classList.add("current");
+      btn.classList.add("update");
+      btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
+      btn.querySelector("span").textContent = "Update";
+
     } else if (mode === "delete") {
       console.log("mode is delete.");
-      if (Array.from(elem.classList).includes("selected")) {
+      if (elem.classList.contains("selected")) {
         elem.classList.remove("selected");
         toDelete = toDelete.filter(ind => ind !== idx);
+        // if (toDelete.indexOf(idx) > -1) {
+        //   toDelete.slice(toDelete.indexOf(idx), 1);
+        // }
+        // toDelete = [];
+        console.log({
+          toDelete,
+          typeOfToDelte: typeof toDelete,
+          idx
+        });
         document.getElementById("count").innerText = toDelete.length.toString();
-
-
-        document.getElementById("btn").classList.add("disabled");
+        if (toDelete.length.toString() === 0) {
+          document.getElementById("btn").classList.add("disabled");
+        }
       } else {
         elem.classList.add("selected");
         toDelete.push(idx);
@@ -125,7 +141,11 @@ function createItemElement(nameString, moreCount, timeString, idx) {
   return elem;
 }
 
+//////////////////////////////
+
 function modeChangeUI(modeName) {
+  let btn = document.getElementById("btn");
+
   if (modeName === "open") {
     document.body.classList.remove("edit");
     document.body.classList.remove("delete");
@@ -134,12 +154,17 @@ function modeChangeUI(modeName) {
     document.querySelector("nav.open").style.display = "";
     document.querySelector("nav.delete").style.display = "none";
 
-    document.getElementById("btn").classList.add("open");
-    document.getElementById("btn").classList.remove("delete");
-    document.querySelector("#btn span").textContent = "Add Current Window";
+    btn.classList.add("open");
+    btn.classList.remove("delete");
+    if (Array.from(btn.classList).includes("update")) {
+      btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
+      btn.querySelector("span").textContent = "Update";
+    } else {
+      btn.querySelector("img").src = "../../assets/icons/iconmonstr-plus-2.svg";
+      btn.querySelector("span").textContent = "Add Current Window";
+    }
 
-    document.querySelector("#btn img").src = "../../assets/icons/iconmonstr-plus-2.svg";
-    
+
   } else if (modeName === "delete") {
     document.body.classList.remove("open");
     document.body.classList.remove("edit");
@@ -148,9 +173,9 @@ function modeChangeUI(modeName) {
     document.querySelector("nav.open").style.display = "none";
     document.querySelector("nav.delete").style.display = "";
 
-    document.getElementById("btn").classList.remove("open");
-    document.getElementById("btn").classList.add("delete");
-    document.getElementById("btn").classList.add("disabled");
+    btn.classList.remove("open");
+    btn.classList.add("delete");
+    btn.classList.add("disabled");
     document.querySelector("#btn span").textContent = "Remove";
     document.querySelector("#btn img").src = "../../assets/icons/iconmonstr-x-mark-9.svg";
 
@@ -162,45 +187,29 @@ function modeChangeUI(modeName) {
   }
 }
 
-async function updateItem(newData, tabs, idx) {
-  console.log("temp includes curWin.id: temp[curWin.id].toString(), TABS");
-  console.log({
-    temp,
-    idx,
-    toUpdate,
-    newData
-  });
-  toUpdate.lastUpdated = newData.lastUpdated;
-  toUpdate.urls = newData.urls;
-  toUpdate.titles = newData.titles;
-  console.log({
-    what: "updating object",
-    toUpdate
-  });
-}
-
 async function appendToList(newSnap, idx, isNew) {
   let list = document.getElementById("list");
-  let elem = createItemElement(newSnap.titles[0], newSnap.urls.length, newSnap.lastUpdated, idx);
-  
+  let elem = createItemElement(newSnap.titles[0], newSnap.urls.length, newSnap.lastUpdated, newSnap.urls, newSnap.titles, idx);
+
   if (isNew) {
-    document.querySelector(`[data-idx='${idx}']`).classList.add("blinkGreen");
+    elem.classList.add("blinkGreen");
   } else { // isUpdate
     document.querySelector(`[data-idx='${idx}']`).remove();
-    createItemElement(newData.titles[0], toUpdate.urls.length, toUpdate.lastUpdated, idx));
-    document.querySelector(`[data-idx='${idx}']`).classList.add("blinkSkyBlue");
+    elem.classList.add("blinkSkyBlue");
+    elem.classList.add("current");
   }
-  
+
   list.insertBefore(elem, list.firstChild);
-  
+
   setTimeout(() => {
-    document.querySelector(`[data-idx='${idx}']`).classList.remove("blinkSkyBlue");
-    document.querySelector(`[data-idx='${idx}']`).classList.remove("blinkGreen");
+    elem.classList.remove("blinkSkyBlue");
+    elem.classList.remove("blinkGreen");
     console.log("blink removed");
   }, 2000);
 }
 
 export {
   createItemElement,
+  modeChangeUI,
   appendToList
 };

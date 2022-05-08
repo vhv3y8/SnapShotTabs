@@ -8,7 +8,7 @@
 
 @keyframes blink-skyblue {
     10% {
-        background-color: #00ffff;
+        background-color: #51b8e1;
     }
 }
 
@@ -349,8 +349,7 @@ nav hr {
 .item.current {
   background-color: #d9d9d9;
 }
-.item:hover {
-
+.item:not(.current):hover {
     background-color: rgba(230, 230, 230, 0.5);
 
     /* background-color: black; */
@@ -437,6 +436,8 @@ nav hr {
     /* margin: 0 .5rem .5rem; */
     /* margin-bottom: 10px; */
 }
+
+/* :not(.current .tabContainer) */
 .tabContainer:hover {
     /* background-color: rgba(240, 240, 240, 0.5); */
     background-color: rgba(220, 220, 220, 0.5);;
@@ -560,7 +561,9 @@ nav hr {
     /* color: gray; */
     margin-left: .75rem;
 }
-
+#btn.open.update {
+    background-color: #25a7da;
+}
 #btn.open {
     /* background-color: #b4e4cd; */
     background-color: #00b300;
@@ -569,6 +572,9 @@ nav hr {
 }
 #btn.open:active {
     background-color: green;
+}
+#btn.open.update:active {
+    background-color: #1e85ae;
 }
 #btn.delete.disabled {
     background-color: #ffcccc;
@@ -582,6 +588,7 @@ nav hr {
 #btn:not(.disabled).delete:active {
     background-color: #ff1a1a;
 }
+
 
 
 /* ------------------------------------------------- */

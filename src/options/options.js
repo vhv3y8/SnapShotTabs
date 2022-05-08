@@ -15,7 +15,7 @@ window.addEventListener("load", async () => {
   let blob = new Blob([JSON.stringify(toDownload, null, 2)], { type: "application/json" });
   let url = URL.createObjectURL(blob);
   downloadIcon.href = url;
-  downloadIcon.download = "SnapShotTabsData.json";
+  downloadIcon.download = "snapshottabs-extension-data.json";
 });
 
 
@@ -42,7 +42,17 @@ document.getElementById("submit").addEventListener("click", (e) => {
       addUploadedData(obj);
     };
   }
-})
+});
+
+let deleteBtn = document.getElementById("delete");
+deleteBtn.addEventListener("click", async (e) => {
+  if (confirm("Are you sure to Delete All Datas in the storage?")) {
+    chrome.storage.local.set({ data: {}, temp: {}, lastIdx: 0 })
+      .then(() => {
+        alert("All Datas are deleted.");
+      });
+  }
+});
 
 async function addUploadedData(obj) {
   let data = await chrome.storage.local.get();
@@ -55,3 +65,5 @@ async function addUploadedData(obj) {
 
 // get file from input tag and add it to { data }.
 // formatting by extension version if needed.
+
+// delete

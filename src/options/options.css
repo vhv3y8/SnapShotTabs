@@ -19,6 +19,14 @@ a {
   text-decoration: none;
 }
 
+p {
+  font-size: 13px;
+}
+
+hr {
+  margin: 1rem 0;
+}
+
 .container {
   margin-left: 1rem;
 
@@ -29,7 +37,7 @@ a {
   flex-direction: row;
   justify-content: flex-start;
 }
-.title h2 {
+.title h1 {
   margin-left: .7rem;
 }
 
@@ -62,17 +70,12 @@ a {
   animation: upload-blink .8s linear;
 }
 
-
-#uploadDiv p {
-  font-size: 13px;
-}
-
 #submit {
-  width: 80px;
-  height: 40px;
+  width: 100px;
+  height: 50px;
   background-color: #00b300;
   margin-top: 1rem;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: white;
 
@@ -89,4 +92,27 @@ a {
 }
 #submit:active {
   background-color: green;
+}
+
+#delete {
+  width: 140px;
+  height: 50px;
+  background-color: red;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+
+  user-select: none;
+}
+#delete:hover {
+  background-color: #e60000;
+}
+#delete:active {
+  background-color: #cc0000;
 }

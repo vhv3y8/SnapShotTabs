@@ -1,15 +1,14 @@
-import { 
+import {
   refreshTemp,
   generateSnapObj,
-  saveDatas
-} from "data.js";
-import { 
+  saveDatas,
+  isOpened
+} from "./data.js";
+import {
   createItemElement,
-  openWindow,
   modeChangeUI,
-  updateItem,
-  createItem
-} from "ui.js";
+  appendToList
+} from "./ui.js";
 
 let data;
 let lastIdx;
@@ -19,39 +18,54 @@ let toDelete = [];
 
 window.addEventListener("load", async (e) => {
   let curWin = await chrome.windows.getCurrent();
-  let curWinIdStr = curWin.id + "";
+  let currWinIdStr = curWin.id + "";
   let storageAll = await chrome.storage.local.get();
   let list = document.getElementById("list");
-  
+
   data = storageAll.data;
   lastIdx = storageAll.lastIdx;
   temp = storageAll.temp;
-  
-  console.log("first fetched temp:");
-  console.log(Object.assign({}, temp));
-  temp = refreshTemp(temp);
-  console.log("updated temp. now temp is ");
-  console.log(temp);
+
   console.log("fetched all data from storage.");
   console.log({
     data,
     lastIdx,
-    curWin
+    curWin,
+    temp
   });
+
+  console.log("first fetched temp:");
+  console.log(Object.assign({}, temp));
+
+  refreshTemp(temp)
+    .then(res => {
+      console.log("refreshed and getted Temp from popup. now temp is :");
+      console.log(temp);
+    });
+
+  // console.log("updated temp. now temp is ");
+  // console.log({ temp });
 
   document.querySelector("nav.open").style.display = "true";
   document.querySelector("nav.edit").style.display = "none";
   document.querySelector("nav.delete").style.display = "none";
-  
+
   Object.keys(storageAll.data)
-    .sort((a, b) => (moment(storageAll.data[a].lastUpdate).isBefore(moment(storageAll.data[b].lastUpdate))) ? 1 : -1)
+    .sort((a, b) => (moment(storageAll.data[a].lastUpdated).isBefore(moment(storageAll.data[b].lastUpdated))) ? 1 : -1)
     .forEach((idx) => {
-      list.appendChild(createItemElement(data[idx].titles[0], data[idx].urls.length, data[idx].lastUpdate, idx));
+      list.appendChild(createItemElement(data[idx].titles[0], data[idx].urls.length, data[idx].lastUpdated, data[idx].urls, data[idx].titles, idx));
     });
-  
-  if (isOpened(curWinIdStr, temp)) {
-    let idx = temp[curWinIdStr];
+
+  let btn = document.getElementById("btn");
+  if (isOpened(currWinIdStr, temp)) {
+    let idx = temp[currWinIdStr];
     document.querySelector(`[data-idx="${idx}"]`).classList.add("current");
+    btn.classList.add("update");
+    btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
+    btn.querySelector("span").textContent = "Update";
+  } else {
+    btn.querySelector("img").src = "../../assets/icons/iconmonstr-plus-2.svg";
+    btn.querySelector("span").textContent = "Add Current Window";
   }
 
   // delete mode
@@ -62,7 +76,7 @@ window.addEventListener("load", async (e) => {
     modeChangeUI("delete");
     toDelete = [];
   });
-  
+
   let exitIcon = document.getElementsByClassName("exitIcon");
   Array.from(exitIcon).forEach((elem) => {
     elem.addEventListener("click", () => {
@@ -71,23 +85,23 @@ window.addEventListener("load", async (e) => {
     });
   });
 });
-  // input reset button
-  // let input = document.getElementById("searchInput");
-  // let inputReset = document.getElementById("inputReset");
-  // document.addEventListener("keyup", (e) => {
-  //   if (document.activeElement === input) {
-  //     if (input.value === "") {
-  //       inputReset.style.visibility = "hidden";
-  //     } else {
-  //       inputReset.style.visibility = "visible";
-  //     }
-  //   }
-  // });
-  // inputReset.addEventListener("click", (e) => {
-  //   input.value = "";
-  //   inputReset.style.visibility = "hidden";
-  //   input.focus();
-  // });
+// input reset button
+// let input = document.getElementById("searchInput");
+// let inputReset = document.getElementById("inputReset");
+// document.addEventListener("keyup", (e) => {
+//   if (document.activeElement === input) {
+//     if (input.value === "") {
+//       inputReset.style.visibility = "hidden";
+//     } else {
+//       inputReset.style.visibility = "visible";
+//     }
+//   }
+// });
+// inputReset.addEventListener("click", (e) => {
+//   input.value = "";
+//   inputReset.style.visibility = "hidden";
+//   input.focus();
+// });
 
 // save | update | delete item
 let btn = document.getElementById("btn");
@@ -98,28 +112,42 @@ btn.addEventListener("click", async () => {
     temp,
     curWin
   });
-  let curWinIdStr = curWin.id + "";
+  let currWinIdStr = curWin.id + "";
 
   if (mode === "open") {
     console.log("open mode.");
-    let tabs = await chrome.tabs.query({ currentWindow: true });
-    let newSnap = generateSnapObj(tabs);
-    
-    let toUpdate = data[idx];
-    if (toUpdate === undefined) {
-      createItem(newSnap, tabs, idx);
-    } else {
+    let currTabs = await chrome.tabs.query({ currentWindow: true });
+    let newSnap;
+
+    if (isOpened(currWinIdStr, temp)) { // update
+      let currIdx = temp[currWinIdStr];
+      newSnap = data[currIdx]; // this makes updating newSnap update data too?
+      newSnap.lastUpdated = new Date().toISOString();
+      newSnap.urls = currTabs.map(tab => tab.url);
+      newSnap.titles = currTabs.map(tab => tab.title);
+      appendToList(newSnap, currIdx, false);
+      // updateItem(newSnap, tabs, currIdx).then(saveDatas);
+    } else { // add
+      newSnap = generateSnapObj(currTabs);
+      let currIdx = ++lastIdx + "";
+      data[currIdx] = newSnap;
+      appendToList(newSnap, currIdx, true);
+      // createItem(newSnap, tabs, ++lastIdx).then(saveDatas);
+      temp[currWinIdStr] = currIdx;
+
+      document.querySelector(`[data-idx="${currIdx}"]`).classList.add("current");
+      btn.classList.add("update");
+      btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
+      btn.querySelector("span").textContent = "Update";
     }
-    
-    if (isOpened(curWinIdStr, temp)) {
-      let currIdx = temp[curWinIdStr];
-      
-      updateItem(newSnap, tabs, currIdx).then(saveDatas);
-    } else {
-      data[idx] = newSnap;
-      createItem(newSnap, tabs, ++lastIdx).then(saveDatas);
-      temp[curWinIdStr] = idx;
-    }
+    saveDatas(data, lastIdx, temp);
+
+    // let toUpdate = data[idx];
+    // if (toUpdate === undefined) {
+    //   createItem(newSnap, currTabs, idx);
+    // } else {
+    // }
+
   } else if (mode === "delete") {
     console.log("delete mode.");
     if (toDelete.length > 0) {
@@ -127,6 +155,31 @@ btn.addEventListener("click", async () => {
       Array.from(document.querySelectorAll(`.item.selected`)).forEach(elem => {
         elem.remove();
       });
+
+      // if current is being delete, remove current window from temp too.
+      if (isOpened(currWinIdStr, temp) && toDelete.includes(temp[currWinIdStr])) {
+        delete temp[currWinIdStr];
+        btn.querySelector("img").src = "../../assets/icons/iconmonstr-plus-2.svg";
+        btn.querySelector("span").textContent = "Add Current Window";
+        btn.classList.remove("update");
+
+        chrome.storage.local.set({ temp: temp })
+          .then(() => {
+            console.log("temp is refreshed.");
+            console.log({ temp });
+
+            return temp;
+          })
+          .catch((error) => {
+            console.log("error occured at saving temp.");
+            console.error(error);
+            console.log("returning empty temp..");
+            return {};
+          });
+      } else {
+
+      }
+
       toDelete.forEach((idx) => {
         delete data[idx];
       });
@@ -140,3 +193,5 @@ btn.addEventListener("click", async () => {
     }
   }
 });
+
+export { data, lastIdx, temp, mode, toDelete };
