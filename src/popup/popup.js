@@ -2,12 +2,13 @@ import {
   refreshTemp,
   generateSnapObj,
   saveDatas,
-  isOpened
+  existsInTemp
 } from "./data.js";
 import {
   createItemElement,
   modeChangeUI,
-  appendToList
+  appendToList,
+  setBtnTo
 } from "./ui.js";
 
 let data;
@@ -37,7 +38,7 @@ window.addEventListener("load", async (e) => {
   console.log("first fetched temp:");
   console.log(Object.assign({}, temp));
 
-  refreshTemp(temp)
+  refreshTemp()
     .then(res => {
       console.log("refreshed and getted Temp from popup. now temp is :");
       console.log(temp);
@@ -57,15 +58,14 @@ window.addEventListener("load", async (e) => {
     });
 
   let btn = document.getElementById("btn");
-  if (isOpened(currWinIdStr, temp)) {
+  if (existsInTemp(currWinIdStr)) {
     let idx = temp[currWinIdStr];
     document.querySelector(`[data-idx="${idx}"]`).classList.add("current");
-    btn.classList.add("update");
-    btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
-    btn.querySelector("span").textContent = "Update";
+    document.querySelector(`[data-idx="${idx}"]`).scrollIntoView({ behavior: "smooth", block: "center" });
+
+    setBtnTo("update");
   } else {
-    btn.querySelector("img").src = "../../assets/icons/iconmonstr-plus-2.svg";
-    btn.querySelector("span").textContent = "Add Current Window";
+    setBtnTo("add");
   }
 
   // delete mode
@@ -74,6 +74,7 @@ window.addEventListener("load", async (e) => {
     // change nav contents
     mode = "delete";
     modeChangeUI("delete");
+    setBtnTo("delete");
     toDelete = [];
   });
 
@@ -119,7 +120,7 @@ btn.addEventListener("click", async () => {
     let currTabs = await chrome.tabs.query({ currentWindow: true });
     let newSnap;
 
-    if (isOpened(currWinIdStr, temp)) { // update
+    if (existsInTemp(currWinIdStr)) { // update
       let currIdx = temp[currWinIdStr];
       newSnap = data[currIdx]; // this makes updating newSnap update data too?
       newSnap.lastUpdated = new Date().toISOString();
@@ -127,6 +128,7 @@ btn.addEventListener("click", async () => {
       newSnap.titles = currTabs.map(tab => tab.title);
       appendToList(newSnap, currIdx, false);
       // updateItem(newSnap, tabs, currIdx).then(saveDatas);
+      
     } else { // add
       newSnap = generateSnapObj(currTabs);
       let currIdx = ++lastIdx + "";
@@ -136,12 +138,11 @@ btn.addEventListener("click", async () => {
       temp[currWinIdStr] = currIdx;
 
       document.querySelector(`[data-idx="${currIdx}"]`).classList.add("current");
-      btn.classList.add("update");
-      btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
-      btn.querySelector("span").textContent = "Update";
     }
+    
     saveDatas(data, lastIdx, temp);
-
+  
+    setBtnTo("update");
     // let toUpdate = data[idx];
     // if (toUpdate === undefined) {
     //   createItem(newSnap, currTabs, idx);
@@ -157,7 +158,8 @@ btn.addEventListener("click", async () => {
       });
 
       // if current is being delete, remove current window from temp too.
-      if (isOpened(currWinIdStr, temp) && toDelete.includes(temp[currWinIdStr])) {
+      /*
+      if (existsInTemp(currWinIdStr, temp) && toDelete.includes(temp[currWinIdStr])) {
         delete temp[currWinIdStr];
         btn.querySelector("img").src = "../../assets/icons/iconmonstr-plus-2.svg";
         btn.querySelector("span").textContent = "Add Current Window";
@@ -179,17 +181,25 @@ btn.addEventListener("click", async () => {
       } else {
 
       }
+      */
 
       toDelete.forEach((idx) => {
         delete data[idx];
+        
+        if (Object.values(temp).includes(idx)) {
+          // delete from temp
+          delete temp[Object.fromEntries(Object.entries(temp).map(ent => ent.reverse()))[idx]];
+        }
       });
       toDelete = [];
-      chrome.storage.local.set({ data: data })
+      chrome.storage.local.set({ data: data, temp: temp })
         .then(() => {
-          console.log("datas deleted successfully.");
+          console.log("datas and temp deleted successfully.");
         });
+      
       mode = "open";
       modeChangeUI("open");
+      setBtnTo((existsInTemp(currWinIdStr, temp)) ? "update" : "add");
     }
   }
 });

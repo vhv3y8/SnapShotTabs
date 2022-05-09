@@ -44,13 +44,16 @@ function createItemElement(nameString, tabCount, timeString, urls, titles, idx) 
   itemBody.appendChild(itemName);
   itemBody.appendChild(itemTime);
   itemBody.addEventListener("click", (e) => {
-    if (mode === "open" && !Array.from(elem.classList).includes("current")) {
+    if (mode === "open" && !elem.classList.contains("current")) {
       openWindow(idx);
-
+      
+      document.querySelector(".current").classList.remove("current");
       document.querySelector(`[data-idx="${idx}"]`).classList.add("current");
       btn.classList.add("update");
       btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
       btn.querySelector("span").textContent = "Update";
+
+      elem.scrollIntoView({ behavior: "smooth" });
 
     } else if (mode === "delete") {
       console.log("mode is delete.");
@@ -124,7 +127,7 @@ function createItemElement(nameString, tabCount, timeString, urls, titles, idx) 
 
   tabContainer.addEventListener("click", (e) => {
     tabContainer.classList.toggle("expand");
-    if (Array.from(tabContainer.classList).includes("expand")) {
+    if (tabContainer.classList.contains("expand")) {
       arrow.setAttribute("src", "../../assets/icons/iconmonstr-arrow-66.svg");
       showTabSpan.textContent = "hide tabs";
     } else {
@@ -156,7 +159,7 @@ function modeChangeUI(modeName) {
 
     btn.classList.add("open");
     btn.classList.remove("delete");
-    if (Array.from(btn.classList).includes("update")) {
+    if (btn.classList.contains("update")) {
       btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
       btn.querySelector("span").textContent = "Update";
     } else {
@@ -173,11 +176,7 @@ function modeChangeUI(modeName) {
     document.querySelector("nav.open").style.display = "none";
     document.querySelector("nav.delete").style.display = "";
 
-    btn.classList.remove("open");
-    btn.classList.add("delete");
-    btn.classList.add("disabled");
-    document.querySelector("#btn span").textContent = "Remove";
-    document.querySelector("#btn img").src = "../../assets/icons/iconmonstr-x-mark-9.svg";
+
 
     Array.from(document.querySelectorAll(".item.selected")).forEach(item => {
       item.classList.remove("selected");
@@ -185,6 +184,11 @@ function modeChangeUI(modeName) {
 
     document.getElementById("count").textContent = "0";
   }
+}
+
+function renderList(sortOptions) {
+  // 기본값 { key: "lastUpdated", reverse: false }
+//  if (sortBy ===)
 }
 
 async function appendToList(newSnap, idx, isNew) {
@@ -200,6 +204,7 @@ async function appendToList(newSnap, idx, isNew) {
   }
 
   list.insertBefore(elem, list.firstChild);
+  elem.scrollIntoView({ behavior: "smooth", block: "center" });
 
   setTimeout(() => {
     elem.classList.remove("blinkSkyBlue");
@@ -208,8 +213,39 @@ async function appendToList(newSnap, idx, isNew) {
   }, 2000);
 }
 
+
+
+function setBtnTo(what) {
+  if (what === "add") {
+    btn.classList.add("add");
+    btn.classList.remove("update");
+    btn.classList.remove("delete");
+    btn.classList.remove("disabled");
+    
+    btn.querySelector("img").src = "../../assets/icons/iconmonstr-plus-2.svg";
+    btn.querySelector("span").textContent = "Add Current Window";
+  } else if (what === "update") {
+      btn.classList.remove("add");
+    btn.classList.add("update");
+    btn.classList.remove("delete");
+    btn.classList.remove("disabled");
+    
+    btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
+    btn.querySelector("span").textContent = "Update";
+  } else if (what === "delete") {
+    btn.classList.remove("add");
+    btn.classList.remove("update");
+    btn.classList.add("delete");
+    btn.classList.add("disabled");
+    
+    document.querySelector("#btn span").textContent = "Remove";
+    document.querySelector("#btn img").src = "../../assets/icons/iconmonstr-x-mark-9.svg";
+  }
+}
+
 export {
   createItemElement,
   modeChangeUI,
-  appendToList
+  appendToList,
+  setBtnTo
 };

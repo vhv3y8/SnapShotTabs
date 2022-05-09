@@ -15,15 +15,17 @@ async function openWindow(idx) {
     });
 
     if (tabs.length <= snapToOpen.urls.length) {
-      for (let i = 0; i < tabs.length; i++) {
-        chrome.tabs.update(tabs[i].id, { url: snapToOpen.urls[i] });
+      chrome.tabs.update(tabs[0].id, { url: snapToOpen.urls[0], active: true });
+      for (let i = 1; i < tabs.length; i++) {
+        chrome.tabs.update(tabs[i].id, { url: snapToOpen.urls[i], active: false });
       }
       for (let i = tabs.length; i < snapToOpen.urls.length; i++) {
-        chrome.tabs.create({ url: snapToOpen.urls[i], windowId: currWin.id });
+        chrome.tabs.create({ url: snapToOpen.urls[i], windowId: currWin.id, active: false });
       }
     } else {
-      for (let i = 0; i < snapToOpen.urls.length; i++) {
-        chrome.tabs.update(tabs[i].id, { url: snapToOpen.urls[i] });
+      chrome.tabs.update(tabs[0].id, { url: snapToOpen.urls[0], active: true });
+      for (let i = 1; i < snapToOpen.urls.length; i++) {
+        chrome.tabs.update(tabs[i].id, { url: snapToOpen.urls[i], active: false });
       }
       for (let i = snapToOpen.urls.length; i < tabs.length; i++) {
         chrome.tabs.remove(tabs[i].id);
@@ -32,7 +34,7 @@ async function openWindow(idx) {
   }
 }
 
-async function refreshTemp(temp) {
+async function refreshTemp() {
   let windows = await chrome.windows.getAll();
   let openWinIds = windows.map(window => window.id + "");
   console.log("refreshing Temp.");
@@ -54,13 +56,13 @@ async function refreshTemp(temp) {
       console.log("temp is refreshed.");
       console.log({ temp });
 
-      return temp;
+      // return temp;
     })
     .catch((error) => {
       console.log("error occured at saving temp.");
       console.error(error);
       console.log("returning empty temp..");
-      return {};
+      // return {};
     });
 }
 
@@ -108,9 +110,9 @@ async function saveDatas(data, lastIdx, temp) {
   });
 }
 
-function isOpened(winId, temp) {
+function existsInTemp(winId) {
   if (temp === undefined || temp === null) {
-    console.log(`isOpened : temp is ${temp}..`);
+    console.log(`existsInTemp : temp is ${temp}..`);
     return false;
   } else {
     return Object.keys(temp).includes(winId);
@@ -122,5 +124,5 @@ export {
   refreshTemp,
   generateSnapObj,
   saveDatas,
-  isOpened
+  existsInTemp
 };

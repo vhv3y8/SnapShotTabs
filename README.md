@@ -2,7 +2,10 @@
 
 chrome extension to help save and open many tabs at a time.
 
+### popup
 ![example image](example.png)
+
+### options page
 ![exmple option](example-options.png)
 
 ### more
