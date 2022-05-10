@@ -1,4 +1,4 @@
-## SnapShotTabs
+## ![icon](assets/icon32.svg) SnapShotTabs
 
 chrome extension to help save and open many tabs at a time.
 
