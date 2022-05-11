@@ -46,8 +46,10 @@ function createItemElement(nameString, tabCount, timeString, urls, titles, idx) 
   itemBody.addEventListener("click", (e) => {
     if (mode === "open" && !elem.classList.contains("current")) {
       openWindow(idx);
-      
-      document.querySelector(".current").classList.remove("current");
+
+      if (document.querySelector(".current")) {
+        document.querySelector(".current").classList.remove("current");
+      }
       document.querySelector(`[data-idx="${idx}"]`).classList.add("current");
       btn.classList.add("update");
       btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
@@ -188,7 +190,7 @@ function modeChangeUI(modeName) {
 
 function renderList(sortOptions) {
   // 기본값 { key: "lastUpdated", reverse: false }
-//  if (sortBy ===)
+  //  if (sortBy ===)
 }
 
 async function appendToList(newSnap, idx, isNew) {
@@ -221,15 +223,15 @@ function setBtnTo(what) {
     btn.classList.remove("update");
     btn.classList.remove("delete");
     btn.classList.remove("disabled");
-    
+
     btn.querySelector("img").src = "../../assets/icons/iconmonstr-plus-2.svg";
     btn.querySelector("span").textContent = "Add Current Window";
   } else if (what === "update") {
-      btn.classList.remove("add");
+    btn.classList.remove("add");
     btn.classList.add("update");
     btn.classList.remove("delete");
     btn.classList.remove("disabled");
-    
+
     btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
     btn.querySelector("span").textContent = "Update";
   } else if (what === "delete") {
@@ -237,7 +239,7 @@ function setBtnTo(what) {
     btn.classList.remove("update");
     btn.classList.add("delete");
     btn.classList.add("disabled");
-    
+
     document.querySelector("#btn span").textContent = "Remove";
     document.querySelector("#btn img").src = "../../assets/icons/iconmonstr-x-mark-9.svg";
   }
