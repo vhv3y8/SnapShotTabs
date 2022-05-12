@@ -4,6 +4,14 @@ chrome extension to help save and open many tabs at a time.
 
 ## Features
 
+- Add current window as a snapshot
+- Update snapshot
+- Delete snapshots
+- Download & Upload data files locally
+- Sorted by last updated / time shown as relative
+
+## Screenshots
+
 ### Popup
 
 <table>
