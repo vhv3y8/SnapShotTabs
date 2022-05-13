@@ -3,6 +3,15 @@ import {
   temp
 } from "./popup.js";
 
+function generateSnapObj(tabs) {
+  return {
+    lastOpened: new Date().toISOString(),
+    lastUpdated: new Date().toISOString(),
+    urls: tabs.map(tab => tab.url),
+    titles: tabs.map(tab => tab.title)
+  };
+}
+
 async function openWindow(idx) {
   let currWin = await chrome.windows.getCurrent({ populate: true });
   let currWinIdStr = currWin.id + "";
@@ -34,64 +43,28 @@ async function openWindow(idx) {
   }
 }
 
+function existsInTemp(winId) {
+  if (temp === undefined || temp === null) {
+    console.log(`existsInTemp : temp is ${temp}..`);
+    return false;
+  } else {
+    return Object.keys(temp).includes(winId);
+  }
+}
+
 async function refreshTemp() {
   let windows = await chrome.windows.getAll();
   let openWinIds = windows.map(window => window.id + "");
   console.log("refreshing Temp.");
-  // console.log({
-  //   temp,
-  //   openWinIds
-  // });
+
   Object.keys(temp).forEach(winId => {
     if (!openWinIds.includes(winId)) {
       console.log(`delete ${winId} from temp because it is closed.`);
       delete temp[winId];
     }
   });
-  // console.log("deleting complete. now temp is: ");
-  // console.log(temp);
 
-  chrome.storage.local.set({ temp: temp })
-    .then(() => {
-      console.log("temp is refreshed.");
-      console.log({ temp });
-
-      // return temp;
-    })
-    .catch((error) => {
-      console.log("error occured at saving temp.");
-      console.error(error);
-      console.log("returning empty temp..");
-      // return {};
-    });
-}
-
-// function addToTemp(temp, winId, idx) {
-//   temp[winId + ""] = parseInt(idx);
-
-//   chrome.storage.local.set({ temp: temp }, () => {
-//     console.log(`${winId} : ${idx} added to temp.`);
-//     return temp;
-//   });
-// }
-
-// function removeFromTemp(temp, winId) {
-//   delete temp[winId + ""];
-//   chrome.storage.local.set({ temp: temp }, () => {
-//     console.log(`${winId} deleted from temp.`);
-//     return temp;
-//   });
-// }
-
-function generateSnapObj(tabs) {
-  return {
-    tags: [],
-    folderStack: [],
-    lastOpened: new Date().toISOString(),
-    lastUpdated: new Date().toISOString(),
-    urls: tabs.map(tab => tab.url),
-    titles: tabs.map(tab => tab.title)
-  };
+  chrome.storage.local.set({ temp: temp });
 }
 
 async function saveDatas(data, lastIdx, temp) {
@@ -108,15 +81,6 @@ async function saveDatas(data, lastIdx, temp) {
       temp
     });
   });
-}
-
-function existsInTemp(winId) {
-  if (temp === undefined || temp === null) {
-    console.log(`existsInTemp : temp is ${temp}..`);
-    return false;
-  } else {
-    return Object.keys(temp).includes(winId);
-  }
 }
 
 export {

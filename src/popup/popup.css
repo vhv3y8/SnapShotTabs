@@ -32,29 +32,21 @@ body {
     width: 320px;
     height: 530px;
     background-color: white;
-    /* background-color: #ccccff; */
     padding: .75rem;
     font-family: "Open Sans", sans-serif;
 }
-/* .delete {
-    background-color: #ffcccc;
-}
-.edit {
-    background-color: #e6ffe6;
-} */
+
 
 hr {
     border: 0;
     height: 1.25px;
     background-color: #e6e6e6;
-    /* margin: 8px 0; */
     margin: 5px 0 10px;
 }
 
 /*  */
 
 nav {
-    /* background-color: #999999; */
     width: 100%;
     height: 2.5rem;
     
@@ -62,7 +54,6 @@ nav {
     flex-direction: row;
     justify-content: space-between;
     user-select: none;
-    /* background-color: rgba(230, 230, 230, 0.7); */
 }
 
 nav hr {
@@ -87,35 +78,27 @@ nav hr {
 
 .navItem {
     display: flex;
-    /* display: flex; */
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    /* font-size: 0.9rem; */
+
     font-size: 0.85rem;
     font-weight: 600;
-    /* width: 90px; */
+
     width: 85px;
     height: 100%;
-    /* margin-bottom: .75rem; */
+
     border-radius: 1px;
     user-select: none;
     font-family: 'Open Sans', sans-serif;
     color: #bfbfbf;
 }
-.navItem:hover:not(.selected) {
-    /* background-color: rgba(242, 242, 242, 0.2); */
-    /* background-color: #f2f2f2; */
-}
-.navItem:active:not(.selected) {
-    /* background-color: #e6e6e6; */
-}
+
 .navItem svg {
     fill: #bfbfbf; 
 }
 
 .navItem:hover:not(.selected) svg {
-    /* fill: #999999; */
     fill: #808080;
 }
 .navItem:hover:not(.selected) span {
@@ -123,15 +106,12 @@ nav hr {
     color: #808080;
 }
 .navItem:active:not(.selected) svg {
-    /* fill: #666666; */
     fill: #4d4d4d;
 }
 .navItem:active:not(.selected) span {
-    /* color: #666666; */
     color: #4d4d4d;
 }
 .navItem.selected {
-    /* font-size: 0.9rem; */
     font-size: 1rem;
     color: black;
     font-weight: 700;
@@ -152,7 +132,6 @@ nav hr {
     padding-left: .4rem;
 }
 .navText span {
-    font-family: "Open Sans", sans-serif;
     font-weight: 700;
     font-size: 14px;
 }
@@ -181,7 +160,6 @@ nav hr {
 }
 #deleteIcon:hover svg, #deleteIcon:active svg {
     fill: red;
-    /* fill: black; */
 }
 
 #editIcon:hover svg, #editIcon:active svg {
@@ -189,13 +167,9 @@ nav hr {
 }
 
 .exitIcon {
-    /* width: calc(70px - 8px);
-    height: calc(100% - 8px);
-    margin: 4px; */
     width: 70px;
     height: 100%;
     background-color: rgba(210, 210, 210, 0.6);
-    /* border: 2px solid #666666; */
     
     border-radius: 2.5px;
     
@@ -212,66 +186,12 @@ nav hr {
 }
 .exitIcon span {
     margin-left: 5px;
-    font-weight: 700;
+    font-family: "Open Sans", sans-serif;
     font-size: 14px;
     color: rgba(0, 0, 0, 0.5);
 }
 .exitIcon svg {
     fill: rgba(0, 0, 0, 0.5);
-}
-
-/*  */
-
-/* .removing {
-    background-color: #ffebeb;
-    background-color: #ffe6e6;
-}
-
-.removing .item, .removing .item:hover {
-    background-color: #ffb3b3;
-}
-.removing .item:hover {
-    background-color: #ffb3b3;
-}
-.removing .item:active {
-    background-color: #ff8080;
-}
-.removing .item.selected {
-    background-color: #ff4d4d !important;
-} */
-
-
-/*  */
-
-#search {
-    position: relative;
-    width: 100%;
-}
-#search input {
-    width: calc(100% - 1rem);
-    height: 1.5rem;
-    border: none;
-    outline: none;
-    margin: 0;
-    padding: 0.25rem;
-    padding-left: 0.75rem;
-    margin-bottom: 0.5rem;
-    background-color: rgba(242, 242, 242, 0.8);
-    font-family: "Open Sans", sans-serif;
-    text-decoration: none !important;
-    border-radius: 1.25px;
-    color: #333333;
-}
-#search input::-moz-selection { /* Code for Firefox */
-    color: #404040;
-    background: #d9d9d9;
-    /* text-decoration: none !important; */
-}
-
-#search input::selection {
-    color: #404040;
-    background: #d9d9d9;
-    /* text-decoration: none !important; */
 }
 
 #inputReset {
@@ -287,9 +207,6 @@ nav hr {
     top: 0;
     right: 0;
 }
-/* .inputReset:hover {
-    background-color: black;
-} */
 
 /* ------------------------------------------------- */
 
@@ -297,18 +214,14 @@ nav hr {
     width: 100%;
     height: 375px;
     background-color: rgba(255, 255, 255, 0.5);
-    /* padding: 0.6rem; */
     padding-right: 0.15rem;
-    /* background-color: #f2f2f2; */
     
     /* https://stackoverflow.com/a/8631811/13692546 */
     /* overflow-y: hidden; */
     overflow-y: scroll;
     scrollbar-gutter: stable;
 }
-/* #list:hover {
-    overflow-y: auto;
-} */
+
 #list::-webkit-scrollbar {
     width: 0.45rem;
     height: 100%;
@@ -327,22 +240,14 @@ nav hr {
 }
 #list::-webkit-scrollbar-track{
     background-color: #f2f2f2;
-    /* opacity: 0.8; */
 }
 
 
 .item {
-    /* width: calc(100% - 0.85rem); */
     width: 100%;
-    /* height: 75px; */
-    /* padding: .5rem;
-    padding-left: .85rem; */
     
     border-radius: 3px;
-    /* margin-bottom: .5rem; */
     margin-bottom: .2rem;
-    /* background-color: red; */
-    /* font-family: 'NanumSquareRoundBold'; */
     font-family: 'Open Sans', sans-serif;
     user-select: none;
 }
@@ -351,8 +256,6 @@ nav hr {
 }
 .item:not(.current):hover {
     background-color: rgba(230, 230, 230, 0.5);
-
-    /* background-color: black; */
 }
 .delete .item.selected {
     background-color: #ffcccc;
@@ -370,17 +273,7 @@ nav hr {
     padding-bottom: 0.2rem;
     padding-left: .75rem;
     padding-right: 0.5rem;
-    /* background-color: #d9d9d9; */
 }
-
-/* .itemBody:hover { */
-    /* background-color: rgba(247, 247, 247, 0.5); */
-    /* background-color: #d9d9d9; */
-    /* background-color: #f2f2f2; */
-/* } */
-/* .itemBody:active {
-    background-color: rgba(230, 230, 230, 0.5);
-} */
 
 .itemName {
     display: flex;
@@ -392,7 +285,6 @@ nav hr {
 .item .itemName .title {
     display: inline-block;
     font-size: 16px;
-    /* font-weight: 700; */
 
     max-width: calc(100% - 100px);
     text-overflow: ellipsis;
@@ -405,8 +297,6 @@ nav hr {
     width: 90px;
     height: 100%;
     font-size: 12px;
-    /* font-weight: 700; */
-    /* color: #666666; */
     color: #333333;
     margin-left: 7px;
 }
@@ -421,7 +311,6 @@ nav hr {
 }
 .item .itemTime span {
     font-size: 11px;
-    /* font-weight: 700; */
     margin-left: 5px;
 }
 
@@ -431,17 +320,10 @@ nav hr {
 
 .tabContainer {
     width: calc(100%);
-    /* min-height: 24px; */
-    /* overflow: scroll; */
-    /* margin: 0 .5rem .5rem; */
-    /* margin-bottom: 10px; */
 }
 
-/* :not(.current .tabContainer) */
 .tabContainer:hover {
-    /* background-color: rgba(240, 240, 240, 0.5); */
     background-color: rgba(220, 220, 220, 0.5);;
-    /* background-color: #e6e6e6; */
 }
 .tabContainer:active {
     background-color: rgba(215, 215, 215, 0.5);
@@ -457,24 +339,18 @@ nav hr {
     height: 24px;
     border-radius: 0 0 4px 4px;
     color: #666666;
-    /* padding-left: .75rem; */
     padding-left: .25rem;
     padding-bottom: .25rem;
-    /* background-color: #f2f2f2; */
-    /* margin-bottom: 5px; */
     
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
 }
-/* .expandTabs:hover {
-    background-color: #f2f2f2;
-} */
+
 .expandTabs span {
     font-family: 'Open Sans', sans-serif;
     font-size: 11.5px;
-    /* margin-top: calc((100% - 12px) / 2); */
     margin-left: 7px;
 }
 .expandTabs img {
@@ -490,7 +366,6 @@ nav hr {
 .tabItem {
     width: calc(100% - 0.95em);
     height: 1.5rem;
-    /* background-color: #d9d9d9; */
     margin-bottom: 2px;
     padding: 0 0.5em;
     color: #333333;
@@ -510,7 +385,6 @@ nav hr {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    /* padding-left: 5px; */
 }
 .tabItem .url {
     max-width: 40%;
@@ -555,17 +429,14 @@ nav hr {
     
 }
 #btn span {
-    font-family: "Open Sans", sans-serif;
     font-weight: 700;
     font-size: 18px;
-    /* color: gray; */
     margin-left: .75rem;
 }
 #btn.open.update {
     background-color: #25a7da;
 }
 #btn.open {
-    /* background-color: #b4e4cd; */
     background-color: #00b300;
     color: #f2f2f2;
     font-weight: 700;
@@ -582,13 +453,8 @@ nav hr {
 #btn.delete:not(.disabled) {
     background-color: #ff1a1a;
 }
-/* #btn.delete:hover { */
-    /* background-color: #ff3333; */
-/* } */
 #btn:not(.disabled).delete:active {
     background-color: #ff1a1a;
 }
-
-
 
 /* ------------------------------------------------- */

@@ -1,5 +1,5 @@
 {
-  "name": "SnapShotTabs",
+  "name": "SnapShot Tabs",
   "version": "0.1.0",
   "manifest_version": 3,
   "description": "Helps to save and open many tabs at a time.",
@@ -15,8 +15,7 @@
     "default_popup": "src/popup/popup.html"
   },
   "background": {
-    "service_worker": "src/background.js",
-    "type": "module"
+    "service_worker": "src/background.js"
   },
   "options_page": "src/options/options.html"
 }

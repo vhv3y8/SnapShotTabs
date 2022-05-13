@@ -1,8 +1,5 @@
 // download
 let downloadIcon = document.getElementById("downloadIcon");
-// downloadIcon.addEventListener("click", async () => {
-
-// });
 window.addEventListener("load", async () => {
   let data = await chrome.storage.local.get();
   let manifest = await chrome.runtime.getManifest();
@@ -17,9 +14,6 @@ window.addEventListener("load", async () => {
   downloadIcon.href = url;
   downloadIcon.download = "snapshottabs-extension-data.json";
 });
-
-
-// get { data, lastIdx, extensionVersion } and send it to file
 
 // upload
 let uploadFile = document.getElementById("uploadFile");
@@ -62,8 +56,3 @@ async function addUploadedData(obj) {
   console.log(data);
   chrome.storage.local.set(data);
 }
-
-// get file from input tag and add it to { data }.
-// formatting by extension version if needed.
-
-// delete

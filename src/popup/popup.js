@@ -44,9 +44,6 @@ window.addEventListener("load", async (e) => {
       console.log(temp);
     });
 
-  // console.log("updated temp. now temp is ");
-  // console.log({ temp });
-
   document.querySelector("nav.open").style.display = "true";
   document.querySelector("nav.edit").style.display = "none";
   document.querySelector("nav.delete").style.display = "none";
@@ -57,7 +54,6 @@ window.addEventListener("load", async (e) => {
       list.appendChild(createItemElement(data[idx].titles[0], data[idx].urls.length, data[idx].lastUpdated, data[idx].urls, data[idx].titles, idx));
     });
 
-  let btn = document.getElementById("btn");
   if (existsInTemp(currWinIdStr)) {
     let idx = temp[currWinIdStr];
     document.querySelector(`[data-idx="${idx}"]`).classList.add("current");
@@ -67,42 +63,7 @@ window.addEventListener("load", async (e) => {
   } else {
     setBtnTo("add");
   }
-
-  // delete mode
-  let deleteIcon = document.getElementById("deleteIcon");
-  deleteIcon.addEventListener("click", () => {
-    // change nav contents
-    mode = "delete";
-    modeChangeUI("delete");
-    setBtnTo("delete");
-    toDelete = [];
-  });
-
-  let exitIcon = document.getElementsByClassName("exitIcon");
-  Array.from(exitIcon).forEach((elem) => {
-    elem.addEventListener("click", () => {
-      mode = "open";
-      modeChangeUI("open");
-    });
-  });
 });
-// input reset button
-// let input = document.getElementById("searchInput");
-// let inputReset = document.getElementById("inputReset");
-// document.addEventListener("keyup", (e) => {
-//   if (document.activeElement === input) {
-//     if (input.value === "") {
-//       inputReset.style.visibility = "hidden";
-//     } else {
-//       inputReset.style.visibility = "visible";
-//     }
-//   }
-// });
-// inputReset.addEventListener("click", (e) => {
-//   input.value = "";
-//   inputReset.style.visibility = "hidden";
-//   input.focus();
-// });
 
 // save | update | delete item
 let btn = document.getElementById("btn");
@@ -127,27 +88,20 @@ btn.addEventListener("click", async () => {
       newSnap.urls = currTabs.map(tab => tab.url);
       newSnap.titles = currTabs.map(tab => tab.title);
       appendToList(newSnap, currIdx, false);
-      // updateItem(newSnap, tabs, currIdx).then(saveDatas);
-      
+
     } else { // add
       newSnap = generateSnapObj(currTabs);
       let currIdx = ++lastIdx + "";
       data[currIdx] = newSnap;
       appendToList(newSnap, currIdx, true);
-      // createItem(newSnap, tabs, ++lastIdx).then(saveDatas);
       temp[currWinIdStr] = currIdx;
 
       document.querySelector(`[data-idx="${currIdx}"]`).classList.add("current");
     }
-    
+
     saveDatas(data, lastIdx, temp);
-  
+
     setBtnTo("update");
-    // let toUpdate = data[idx];
-    // if (toUpdate === undefined) {
-    //   createItem(newSnap, currTabs, idx);
-    // } else {
-    // }
 
   } else if (mode === "delete") {
     console.log("delete mode.");
@@ -157,35 +111,9 @@ btn.addEventListener("click", async () => {
         elem.remove();
       });
 
-      // if current is being delete, remove current window from temp too.
-      /*
-      if (existsInTemp(currWinIdStr, temp) && toDelete.includes(temp[currWinIdStr])) {
-        delete temp[currWinIdStr];
-        btn.querySelector("img").src = "../../assets/icons/iconmonstr-plus-2.svg";
-        btn.querySelector("span").textContent = "Add Current Window";
-        btn.classList.remove("update");
-
-        chrome.storage.local.set({ temp: temp })
-          .then(() => {
-            console.log("temp is refreshed.");
-            console.log({ temp });
-
-            return temp;
-          })
-          .catch((error) => {
-            console.log("error occured at saving temp.");
-            console.error(error);
-            console.log("returning empty temp..");
-            return {};
-          });
-      } else {
-
-      }
-      */
-
       toDelete.forEach((idx) => {
         delete data[idx];
-        
+
         if (Object.values(temp).includes(idx)) {
           // delete from temp
           delete temp[Object.fromEntries(Object.entries(temp).map(ent => ent.reverse()))[idx]];
@@ -196,12 +124,35 @@ btn.addEventListener("click", async () => {
         .then(() => {
           console.log("datas and temp deleted successfully.");
         });
-      
+
       mode = "open";
       modeChangeUI("open");
-      setBtnTo((existsInTemp(currWinIdStr, temp)) ? "update" : "add");
+      setBtnTo((existsInTemp(currWinIdStr)) ? "update" : "add");
     }
   }
 });
 
-export { data, lastIdx, temp, mode, toDelete };
+// delete mode
+let deleteIcon = document.getElementById("deleteIcon");
+deleteIcon.addEventListener("click", () => {
+  // change nav contents
+  mode = "delete";
+  modeChangeUI("delete");
+  setBtnTo("delete");
+  toDelete = [];
+});
+
+let exitIcon = document.getElementsByClassName("exitIcon");
+Array.from(exitIcon).forEach((elem) => {
+  elem.addEventListener("click", () => {
+    mode = "open";
+    modeChangeUI("open");
+  });
+});
+
+// https://stackoverflow.com/a/53723394/13692546
+function unselectToDelete(idx) {
+  toDelete = toDelete.filter(ind => ind !== idx);
+}
+
+export { data, lastIdx, temp, mode, toDelete, unselectToDelete };

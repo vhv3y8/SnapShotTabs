@@ -2,6 +2,7 @@ import {
   openWindow
 } from "./data.js";
 import {
+  unselectToDelete,
   mode,
   toDelete
 } from "./popup.js";
@@ -61,18 +62,11 @@ function createItemElement(nameString, tabCount, timeString, urls, titles, idx) 
       console.log("mode is delete.");
       if (elem.classList.contains("selected")) {
         elem.classList.remove("selected");
-        toDelete = toDelete.filter(ind => ind !== idx);
-        // if (toDelete.indexOf(idx) > -1) {
-        //   toDelete.slice(toDelete.indexOf(idx), 1);
-        // }
-        // toDelete = [];
-        console.log({
-          toDelete,
-          typeOfToDelte: typeof toDelete,
-          idx
-        });
+
+        unselectToDelete(idx);
+
         document.getElementById("count").innerText = toDelete.length.toString();
-        if (toDelete.length.toString() === 0) {
+        if (toDelete.length === 0) {
           document.getElementById("btn").classList.add("disabled");
         }
       } else {
@@ -81,7 +75,6 @@ function createItemElement(nameString, tabCount, timeString, urls, titles, idx) 
         document.getElementById("count").innerText = toDelete.length.toString();
         document.getElementById("btn").classList.remove("disabled");
       }
-      console.log(toDelete);
     }
   });
 
@@ -186,11 +179,6 @@ function modeChangeUI(modeName) {
 
     document.getElementById("count").textContent = "0";
   }
-}
-
-function renderList(sortOptions) {
-  // 기본값 { key: "lastUpdated", reverse: false }
-  //  if (sortBy ===)
 }
 
 async function appendToList(newSnap, idx, isNew) {
