@@ -251,11 +251,14 @@ nav hr {
     font-family: 'Open Sans', sans-serif;
     user-select: none;
 }
-.item.current {
+.item.current, .item.current.opened {
   background-color: #d9d9d9;
 }
-.item:not(.current):hover {
+.item:not(.opened):hover {
     background-color: rgba(230, 230, 230, 0.5);
+}
+.item.opened {
+    background-color: #ffffcc;
 }
 .delete .item.selected {
     background-color: #ffcccc;

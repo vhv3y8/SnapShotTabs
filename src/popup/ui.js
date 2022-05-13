@@ -1,17 +1,23 @@
 import {
-  openWindow
+  openWindow,
+  existsInTemp
 } from "./data.js";
 import {
   unselectToDelete,
   mode,
-  toDelete
+  toDelete,
+  temp
 } from "./popup.js";
 
 function createItemElement(nameString, tabCount, timeString, urls, titles, idx) {
+  let tempReverse = Object.fromEntries(Object.entries(temp).map(ent => ent.reverse()));
   let elem = document.createElement("div");
 
   elem.classList.add("item");
   elem.dataset.idx = idx;
+  if (Object.keys(tempReverse).includes(idx)) {
+    elem.classList.add("opened");
+  }
 
   let itemBody = document.createElement("div");
   itemBody.classList.add("itemBody");
@@ -46,17 +52,24 @@ function createItemElement(nameString, tabCount, timeString, urls, titles, idx) 
   itemBody.appendChild(itemTime);
   itemBody.addEventListener("click", (e) => {
     if (mode === "open" && !elem.classList.contains("current")) {
-      openWindow(idx);
+      if (Object.keys(tempReverse).includes(idx)) {
+        console.log("this idx exists as a window. opening that window..");
+        console.log(temp);
+        chrome.windows.update(+tempReverse[idx], { focused: true });
+      } else {
+        openWindow(idx);
 
-      if (document.querySelector(".current")) {
-        document.querySelector(".current").classList.remove("current");
+        if (document.querySelector(".current")) {
+          document.querySelector(".current").classList.remove("current");
+        }
+        document.querySelector(`[data-idx="${idx}"]`).classList.add("current");
+        btn.classList.add("update");
+        btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
+        btn.querySelector("span").textContent = "Update";
+
+        elem.scrollIntoView({ behavior: "smooth" });
+
       }
-      document.querySelector(`[data-idx="${idx}"]`).classList.add("current");
-      btn.classList.add("update");
-      btn.querySelector("img").src = "../../assets/icons/iconmonstr-synchronization-3.svg";
-      btn.querySelector("span").textContent = "Update";
-
-      elem.scrollIntoView({ behavior: "smooth" });
 
     } else if (mode === "delete") {
       console.log("mode is delete.");

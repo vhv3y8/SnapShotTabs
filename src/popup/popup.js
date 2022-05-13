@@ -54,6 +54,8 @@ window.addEventListener("load", async (e) => {
       list.appendChild(createItemElement(data[idx].titles[0], data[idx].urls.length, data[idx].lastUpdated, data[idx].urls, data[idx].titles, idx));
     });
 
+  let tempReverse = Object.fromEntries(Object.entries(temp).map(ent => ent.reverse()));
+
   if (existsInTemp(currWinIdStr)) {
     let idx = temp[currWinIdStr];
     document.querySelector(`[data-idx="${idx}"]`).classList.add("current");
