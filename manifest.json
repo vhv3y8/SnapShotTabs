@@ -1,6 +1,6 @@
 {
   "name": "SnapShot Tabs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "manifest_version": 3,
   "description": "Helps to save and open many tabs at a time.",
   "icons": {
