@@ -38,7 +38,7 @@ window.addEventListener("load", async (e) => {
   console.log("first fetched temp:");
   console.log(Object.assign({}, temp));
 
-  refreshTemp()
+  await refreshTemp()
     .then(res => {
       console.log("refreshed and getted Temp from popup. now temp is :");
       console.log(temp);
@@ -53,8 +53,6 @@ window.addEventListener("load", async (e) => {
     .forEach((idx) => {
       list.appendChild(createItemElement(data[idx].titles[0], data[idx].urls.length, data[idx].lastUpdated, data[idx].urls, data[idx].titles, idx));
     });
-
-  let tempReverse = Object.fromEntries(Object.entries(temp).map(ent => ent.reverse()));
 
   if (existsInTemp(currWinIdStr)) {
     let idx = temp[currWinIdStr];
@@ -145,10 +143,13 @@ deleteIcon.addEventListener("click", () => {
 });
 
 let exitIcon = document.getElementsByClassName("exitIcon");
-Array.from(exitIcon).forEach((elem) => {
+Array.from(exitIcon).forEach(async (elem) => {
+  let curWin = await chrome.windows.getCurrent();
+  let currWinIdStr = curWin.id + "";
   elem.addEventListener("click", () => {
     mode = "open";
     modeChangeUI("open");
+    setBtnTo((existsInTemp(currWinIdStr)) ? "update" : "add");
   });
 });
 

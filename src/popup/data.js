@@ -13,33 +13,17 @@ function generateSnapObj(tabs) {
 }
 
 async function openWindow(idx) {
-  let currWin = await chrome.windows.getCurrent({ populate: true });
-  let currWinIdStr = currWin.id + "";
-  let tabs = currWin.tabs;
   let snapToOpen = data[idx];
-  if (snapToOpen !== undefined) {
-    temp[currWinIdStr] = idx;
-    chrome.storage.local.set({ temp }).then(() => {
-      console.log("opening new window and added id to temp.");
-    });
 
-    if (tabs.length <= snapToOpen.urls.length) {
-      chrome.tabs.update(tabs[0].id, { url: snapToOpen.urls[0], active: true });
-      for (let i = 1; i < tabs.length; i++) {
-        chrome.tabs.update(tabs[i].id, { url: snapToOpen.urls[i], active: false });
-      }
-      for (let i = tabs.length; i < snapToOpen.urls.length; i++) {
-        chrome.tabs.create({ url: snapToOpen.urls[i], windowId: currWin.id, active: false });
-      }
-    } else {
-      chrome.tabs.update(tabs[0].id, { url: snapToOpen.urls[0], active: true });
-      for (let i = 1; i < snapToOpen.urls.length; i++) {
-        chrome.tabs.update(tabs[i].id, { url: snapToOpen.urls[i], active: false });
-      }
-      for (let i = snapToOpen.urls.length; i < tabs.length; i++) {
-        chrome.tabs.remove(tabs[i].id);
-      }
-    }
+  if (snapToOpen !== undefined) {
+    chrome.windows.create({ focused: true, url: snapToOpen.urls })
+      .then((createdWin) => {
+        temp[createdWin.id + ""] = idx;
+
+        chrome.storage.local.set({ temp }).then(() => {
+          console.log("opening new window and added id to temp.");
+        });
+      });
   }
 }
 
